@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SmartFM.Domain.Entities;
 
 namespace SmartFM.Infrastructure.Persistence;
 
@@ -8,9 +9,21 @@ public class SmartFmDbContext : DbContext
     {
     }
 
+    public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<Driver> Drivers => Set<Driver>();
+    public DbSet<TransportOffering> TransportOfferings => Set<TransportOffering>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<Shipment> Shipments => Set<Shipment>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<VehicleAssignment> VehicleAssignments => Set<VehicleAssignment>();
+    public DbSet<DriverAssignment> DriverAssignments => Set<DriverAssignment>();
+    public DbSet<PickupDeliveryOption> PickupDeliveryOptions => Set<PickupDeliveryOption>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        // Apply configurations here
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartFmDbContext).Assembly);
     }
 }
