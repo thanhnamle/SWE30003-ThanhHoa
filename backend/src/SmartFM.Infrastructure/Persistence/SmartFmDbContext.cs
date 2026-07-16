@@ -22,6 +22,8 @@ public class SmartFmDbContext : DbContext
     public DbSet<PickupDeliveryOption> PickupDeliveryOptions => Set<PickupDeliveryOption>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
+    public DbSet<TrackingRecord> TrackingRecords => Set<TrackingRecord>();
+    public DbSet<DeliveryException> DeliveryExceptions => Set<DeliveryException>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
