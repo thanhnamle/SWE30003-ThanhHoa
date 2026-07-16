@@ -20,6 +20,8 @@ public class SmartFmDbContext : DbContext
     public DbSet<VehicleAssignment> VehicleAssignments => Set<VehicleAssignment>();
     public DbSet<DriverAssignment> DriverAssignments => Set<DriverAssignment>();
     public DbSet<PickupDeliveryOption> PickupDeliveryOptions => Set<PickupDeliveryOption>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<Receipt> Receipts => Set<Receipt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
