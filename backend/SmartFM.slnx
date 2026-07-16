@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmartFM.API/SmartFM.API.csproj" />
+    <Project Path="src/SmartFM.Application/SmartFM.Application.csproj" />
+    <Project Path="src/SmartFM.Domain/SmartFM.Domain.csproj" />
+    <Project Path="src/SmartFM.Infrastructure/SmartFM.Infrastructure.csproj" />
+    <Project Path="src/SmartFM.Shared/SmartFM.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmartFM.IntegrationTests/SmartFM.IntegrationTests.csproj" />
+    <Project Path="tests/SmartFM.UnitTests/SmartFM.UnitTests.csproj" />
+  </Folder>
+</Solution>

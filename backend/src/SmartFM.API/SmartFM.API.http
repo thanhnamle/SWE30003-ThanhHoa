@@ -1,0 +1,6 @@
+@SmartFM.API_HostAddress = http://localhost:5181
+
+GET {{SmartFM.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
