@@ -1,7 +1,7 @@
 # Pull Request Description - Persistence Layer
 
 ## Implemented behaviour
-Implemented the full persistence layer for SmartFM using EF Core and MySQL. This covers the 16 Assignment 2 candidate classes that are persisted, their supporting enums, relational mappings, seed data for bootstrap reference tables, and the migration history needed to materialize the schema.
+Implemented the full persistence layer for SmartFM using EF Core and MySQL. This covers the 15 Assignment 2 candidate classes that are persisted, their supporting enums, relational mappings, seed data for bootstrap reference tables, and the migration history needed to materialize the schema.
 
 ## Affected business area
 - Customer & Order Handling
@@ -14,7 +14,7 @@ Implemented the full persistence layer for SmartFM using EF Core and MySQL. This
 - See `docs/08-design-change-log-template.md` for the full class-level changes and DB constraint mapping
 
 ## What's included
-- 16 persisted entity types across `SmartFM.Domain/Entities/`
+- 15 persisted entity types across `SmartFM.Domain/Entities/`
 - Supporting enums in `SmartFM.Domain/Enums/`
 - `SmartFmDbContext` with DbSets and entity configurations
 - Fluent API for 1-1 and 1-n relationships, including unique indexes where required
