@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartFM.Domain.Entities;
+using SmartFM.Domain.Enums;
 
 namespace SmartFM.Infrastructure.Persistence;
 
@@ -29,5 +30,59 @@ public class SmartFmDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartFmDbContext).Assembly);
+
+        SeedReferenceData(modelBuilder);
+    }
+
+    private static void SeedReferenceData(ModelBuilder modelBuilder)
+    {
+        var branchId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+        modelBuilder.Entity<Branch>().HasData(new Branch
+        {
+            Id = branchId,
+            Name = "Ho Chi Minh City Branch",
+            Region = "South",
+            Address = "123 Nguyen Van Linh, District 7",
+            ContactPhone = "028-1234-5678",
+            CreatedAt = new DateTime(2026, 1, 1)
+        });
+
+        modelBuilder.Entity<Vehicle>().HasData(new Vehicle
+        {
+            Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            PlateNumber = "51A-123.45",
+            Type = VehicleType.Truck,
+            MaxPayloadKg = 5000,
+            MaxVolumeM3 = 20,
+            IsUnderMaintenance = false,
+            CreatedAt = new DateTime(2026, 1, 1),
+            BranchId = branchId
+        });
+
+        modelBuilder.Entity<Driver>().HasData(new Driver
+        {
+            Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+            FullName = "Nguyen Van A",
+            LicenseNumber = "B2-998877",
+            LicenseExpiryDate = new DateTime(2028, 1, 1),
+            MaxWeeklyHours = 48,
+            IsOnLeave = false,
+            CreatedAt = new DateTime(2026, 1, 1),
+            BranchId = branchId
+        });
+
+        modelBuilder.Entity<TransportOffering>().HasData(new TransportOffering
+        {
+            Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+            Name = "Standard Freight",
+            Description = "Standard truck freight service",
+            Category = TransportCategory.Standard,
+            MaxCapacityKg = 5000,
+            BaseFee = 500000,
+            FeePerKm = 15000,
+            IsActive = true,
+            CreatedAt = new DateTime(2026, 1, 1)
+        });
     }
 }
