@@ -25,16 +25,21 @@ export interface CreateOrderRequest {
   transportOfferingId: string;
 }
 
-// Seeded Data as per docs/08
+// Seeded Data from Backend DbContext + Extra Mocks
 const mockOfferings: TransportOffering[] = [
-  { id: '11111111-1111-1111-1111-111111111111', category: 'Standard', maxCapacityKg: 5000, baseFee: 50, feePerKm: 2.5, isActive: true },
-  { id: '22222222-2222-2222-2222-222222222222', category: 'Express', maxCapacityKg: 2000, baseFee: 150, feePerKm: 5.0, isActive: true },
-  { id: '33333333-3333-3333-3333-333333333333', category: 'Fragile', maxCapacityKg: 1000, baseFee: 100, feePerKm: 3.5, isActive: true },
-  { id: '44444444-4444-4444-4444-444444444444', category: 'Bulk', maxCapacityKg: 20000, baseFee: 300, feePerKm: 1.5, isActive: true },
+  { id: '44444444-4444-4444-4444-444444444444', category: 'Standard', maxCapacityKg: 5000, baseFee: 500000, feePerKm: 15000, isActive: true },
+  { id: '44444444-4444-4444-4444-444444444445', category: 'Express', maxCapacityKg: 2000, baseFee: 800000, feePerKm: 20000, isActive: true },
+  { id: '44444444-4444-4444-4444-444444444446', category: 'Fragile', maxCapacityKg: 1000, baseFee: 600000, feePerKm: 18000, isActive: true },
+  { id: '44444444-4444-4444-4444-444444444447', category: 'Bulk', maxCapacityKg: 20000, baseFee: 1500000, feePerKm: 10000, isActive: true },
+  { id: '44444444-4444-4444-4444-444444444448', category: 'Standard', maxCapacityKg: 10000, baseFee: 700000, feePerKm: 16000, isActive: true },
 ];
 
 const mockCustomers: Customer[] = [
   { id: '99999999-9999-9999-9999-999999999999', companyName: 'Acme Logistics Corp', isCorporateAccount: true },
+  { id: '99999999-9999-9999-9999-999999999998', companyName: 'Global Retailers Ltd', isCorporateAccount: true },
+  { id: '99999999-9999-9999-9999-999999999997', companyName: 'John Doe Personal', isCorporateAccount: false },
+  { id: '99999999-9999-9999-9999-999999999996', companyName: 'Swift Manufacturing', isCorporateAccount: true },
+  { id: '99999999-9999-9999-9999-999999999995', companyName: 'Jane Smith', isCorporateAccount: false },
 ];
 
 const MOCK_DELAY_MS = 800;

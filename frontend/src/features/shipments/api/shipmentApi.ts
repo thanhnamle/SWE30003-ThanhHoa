@@ -48,25 +48,30 @@ export interface AssignResourcesRequest {
   deliveryWindowEnd: string;
 }
 
-// Seeded Data
+// Seeded Data from Backend DbContext + extra mocks
 const mockVehicles: Vehicle[] = [
-  { id: '55555555-5555-5555-5555-555555555555', plateNumber: 'TRK-9000', type: 'Truck', maxPayloadKg: 10000, maxVolumeM3: 35.0, isUnderMaintenance: false },
-  { id: '66666666-6666-6666-6666-666666666666', plateNumber: 'VAN-1001', type: 'Van', maxPayloadKg: 1500, maxVolumeM3: 8.0, isUnderMaintenance: false },
+  { id: '22222222-2222-2222-2222-222222222222', plateNumber: '51A-123.45', type: 'Truck', maxPayloadKg: 5000, maxVolumeM3: 20, isUnderMaintenance: false },
+  { id: '22222222-2222-2222-2222-222222222223', plateNumber: '51B-987.65', type: 'Van', maxPayloadKg: 1500, maxVolumeM3: 8, isUnderMaintenance: false },
+  { id: '22222222-2222-2222-2222-222222222224', plateNumber: '51C-456.78', type: 'Container', maxPayloadKg: 20000, maxVolumeM3: 60, isUnderMaintenance: true },
+  { id: '22222222-2222-2222-2222-222222222225', plateNumber: '51D-111.22', type: 'Refrigerated', maxPayloadKg: 3000, maxVolumeM3: 15, isUnderMaintenance: false },
+  { id: '22222222-2222-2222-2222-222222222226', plateNumber: '51E-333.44', type: 'Truck', maxPayloadKg: 8000, maxVolumeM3: 30, isUnderMaintenance: false },
 ];
 
 const mockDrivers: Driver[] = [
-  { id: '77777777-7777-7777-7777-777777777777', name: 'John Doe', licenseNumber: 'DL-123456', isOnLeave: false },
-  { id: '88888888-8888-8888-8888-888888888888', name: 'Jane Smith', licenseNumber: 'DL-654321', isOnLeave: false },
+  { id: '33333333-3333-3333-3333-333333333333', name: 'Nguyen Van A', licenseNumber: 'B2-998877', isOnLeave: false },
+  { id: '33333333-3333-3333-3333-333333333334', name: 'Tran Van B', licenseNumber: 'C-112233', isOnLeave: false },
+  { id: '33333333-3333-3333-3333-333333333335', name: 'Le Thi C', licenseNumber: 'B2-445566', isOnLeave: true },
+  { id: '33333333-3333-3333-3333-333333333336', name: 'Pham Van D', licenseNumber: 'FC-778899', isOnLeave: false },
+  { id: '33333333-3333-3333-3333-333333333337', name: 'Hoang Van E', licenseNumber: 'C-990011', isOnLeave: false },
 ];
 
 // In-memory state for mock shipments
 let mockShipments: Shipment[] = [
-  { 
-    id: 'aaaa1111-1111-1111-1111-11111111aaaa', 
-    orderId: 'bbbb2222-2222-2222-2222-22222222bbbb', 
-    status: 'Preparing', 
-    createdAt: new Date().toISOString() 
-  }
+  { id: 'aaaa1111-1111-1111-1111-11111111aaaa', orderId: 'bbbb2222-2222-2222-2222-22222222bbbb', status: 'Preparing', createdAt: new Date(Date.now() - 3600000).toISOString() },
+  { id: 'aaaa1111-1111-1111-1111-11111111aaab', orderId: 'bbbb2222-2222-2222-2222-22222222bbbc', status: 'Preparing', createdAt: new Date(Date.now() - 7200000).toISOString() },
+  { id: 'aaaa1111-1111-1111-1111-11111111aaac', orderId: 'bbbb2222-2222-2222-2222-22222222bbbd', status: 'ReadyForPickup', createdAt: new Date(Date.now() - 14400000).toISOString(), vehicleAssignment: { vehicleId: '22222222-2222-2222-2222-222222222222', vehiclePlate: '51A-123.45' }, driverAssignment: { driverId: '33333333-3333-3333-3333-333333333333', driverName: 'Nguyen Van A' } },
+  { id: 'aaaa1111-1111-1111-1111-11111111aaad', orderId: 'bbbb2222-2222-2222-2222-22222222bbbe', status: 'InTransit', createdAt: new Date(Date.now() - 86400000).toISOString(), vehicleAssignment: { vehicleId: '22222222-2222-2222-2222-222222222223', vehiclePlate: '51B-987.65' }, driverAssignment: { driverId: '33333333-3333-3333-3333-333333333334', driverName: 'Tran Van B' } },
+  { id: 'aaaa1111-1111-1111-1111-11111111aaae', orderId: 'bbbb2222-2222-2222-2222-22222222bbbf', status: 'ExceptionPending', createdAt: new Date(Date.now() - 172800000).toISOString() },
 ];
 
 const MOCK_DELAY_MS = 600;
