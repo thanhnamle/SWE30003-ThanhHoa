@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CreditCard, FileText, CheckCircle2, DollarSign, Clock, AlertCircle, Loader2, ArrowRight, X } from 'lucide-react';
+import { CreditCard, FileText, CheckCircle2, DollarSign, Clock, AlertCircle, Loader2, X } from 'lucide-react';
 import { paymentApi, Invoice, PaymentRequest } from './api/paymentApi';
 
 const paymentSchema = z.object({

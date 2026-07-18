@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,6 +12,7 @@ import {
   Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "../../features/auth/context/AuthContext";
 
 const navSections = [
   {
@@ -48,6 +49,13 @@ const navSections = [
 
 export function Sidebar({ collapsed }: { collapsed: boolean }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <aside className={cn(
@@ -117,15 +125,22 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
           </div>
           {!collapsed && (
             <div className="flex flex-col flex-1 overflow-hidden">
-              <span className="text-sm font-semibold text-gray-900 truncate">Le Nguyen</span>
-              <span className="text-xs text-gray-500 truncate">Ops Manager</span>
+              <span className="text-sm font-semibold text-gray-900 truncate">
+                {user?.fullName ?? "Guest"}
+              </span>
+              <span className="text-xs text-gray-500 truncate">
+                {user?.role ?? "Customer"}
+              </span>
             </div>
           )}
         </div>
         
         {showProfileMenu && (
           <div className="absolute bottom-16 left-4 w-48 bg-white border border-gray-100 shadow-lg rounded-xl overflow-hidden z-50">
-            <button className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-50 font-medium transition-colors">
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-50 font-medium transition-colors"
+            >
               Sign out
             </button>
           </div>

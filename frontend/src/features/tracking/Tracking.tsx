@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MapPin, Navigation, CheckSquare, Upload, Loader2, CheckCircle2, ChevronRight, PackageCheck } from 'lucide-react';
-import { trackingApi, ProofOfDeliveryRequest } from './api/trackingApi';
+import { MapPin, Navigation, CheckSquare, Upload, Loader2, CheckCircle2, PackageCheck } from 'lucide-react';
+import { trackingApi } from './api/trackingApi';
 import { Shipment } from '../shipments/api/shipmentApi';
 
 export function Tracking() {

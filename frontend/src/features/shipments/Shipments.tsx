@@ -3,8 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Truck, User, MapPin, Calendar, Clock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
-import { shipmentApi, Shipment, AssignResourcesRequest } from './api/shipmentApi';
+import { Truck, User, MapPin, Loader2, CheckCircle2 } from 'lucide-react';
+import { shipmentApi, Shipment } from './api/shipmentApi';
 
 const assignmentSchema = z.object({
   vehicleId: z.string().min(1, 'Vehicle is required'),

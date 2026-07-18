@@ -48,7 +48,10 @@ export function Orders() {
   });
 
   const onSubmit = (data: OrderFormValues) => {
-    orderMutation.mutate(data);
+    orderMutation.mutate({
+      ...data,
+      specialHandlingNotes: data.specialHandlingNotes ?? '',
+    });
   };
 
   const handleSelectOffering = (offering: TransportOffering) => {

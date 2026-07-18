@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
+import { type ReactNode } from "react";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { Dashboard } from "./features/dashboard/Dashboard";
 import { Customers } from "./features/customers/Customers";
@@ -10,11 +11,37 @@ import { Tracking } from "./features/tracking/Tracking";
 import { Payments } from "./features/payments/Payments";
 import { Reports } from "./features/reports/Reports";
 import { Settings } from "./features/settings/Settings";
+import { Login } from "./features/auth/Login";
+import { Register } from "./features/auth/Register";
+import { useAuth } from "./features/auth/context/AuthContext";
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <p className="text-sm text-slate-500">Đang tải hệ thống...</p>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<AdminLayout />}>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Dashboard />} />
         <Route path="customers" element={<Customers />} />
         <Route path="drivers" element={<Drivers />} />

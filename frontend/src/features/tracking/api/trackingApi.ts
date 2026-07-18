@@ -67,7 +67,7 @@ export const trackingApi = {
     }, MOCK_DELAY_MS));
   },
 
-  submitProofOfDelivery: async (request: ProofOfDeliveryRequest): Promise<{ success: boolean, deliveredAt: string }> => {
+  submitProofOfDelivery: async (_request: ProofOfDeliveryRequest): Promise<{ success: boolean, deliveredAt: string }> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
@@ -78,7 +78,7 @@ export const trackingApi = {
     });
   },
 
-  updateShipmentStatus: async (shipmentId: string, newStatus: string): Promise<void> => {
+  updateShipmentStatus: async (_shipmentId: string, _newStatus: string): Promise<void> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve();
