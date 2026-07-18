@@ -19,13 +19,13 @@ import { useAuth } from './context/AuthContext';
 
 const registerSchema = z
   .object({
-    fullName: z.string().min(2, 'Vui lòng nhập họ tên đầy đủ'),
-    email: z.string().min(1, 'Vui lòng nhập email').email('Email không hợp lệ'),
-    password: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự'),
-    confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
+    fullName: z.string().min(2, 'Please enter your full name'),
+    email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Mật khẩu xác nhận không khớp',
+    message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
 
@@ -35,9 +35,9 @@ const ROUTE_PATH =
   'M 40,520 C 95,455 35,395 110,355 C 190,312 148,238 228,208 C 300,182 258,108 322,58';
 
 const FEATURES = [
-  { icon: Gauge, text: 'Bảng điều khiển vận hành trực quan' },
-  { icon: ShieldCheck, text: 'Bảo mật dữ liệu doanh nghiệp' },
-  { icon: Zap, text: 'Thiết lập đội xe chỉ trong vài phút' },
+  { icon: Gauge, text: 'Visual fleet management dashboard' },
+  { icon: ShieldCheck, text: 'Enterprise data security' },
+  { icon: Zap, text: 'Quick vehicle fleet setup' },
 ];
 
 export function Register() {
@@ -66,7 +66,7 @@ export function Register() {
       await registerUser(data);
       navigate('/', { replace: true });
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : 'Đăng ký thất bại.');
+      setServerError(err instanceof Error ? err.message : 'Registration failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +152,7 @@ export function Register() {
                 làm chủ vận hành logistics.
               </h2>
               <p className="text-blue-200/80 text-sm mt-2">
-                Tạo tài khoản để bắt đầu điều phối đội xe trong vài phút.
+                Create an account to start managing your vehicle fleet in minutes.
               </p>
             </div>
             <ul className="space-y-3">
@@ -184,13 +184,13 @@ export function Register() {
             <div className="bg-blue-600 rounded-2xl p-3 shadow-lg shadow-blue-500/20 mb-4">
               <Truck className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Tạo tài khoản SmartFM</h1>
-            <p className="text-gray-500 text-sm mt-1">Đăng ký để bắt đầu quản lý vận tải của bạn</p>
+            <h1 className="text-2xl font-bold text-gray-900">Create SmartFM Account</h1>
+            <p className="text-gray-500 text-sm mt-1">Sign up to start managing your fleet in minutes.</p>
           </div>
 
           <div className="hidden lg:block mb-8 sfm-enter">
-            <h1 className="text-2xl font-bold text-gray-900">Tạo tài khoản SmartFM</h1>
-            <p className="text-gray-500 text-sm mt-1">Đăng ký để bắt đầu quản lý vận tải của bạn.</p>
+            <h1 className="text-2xl font-bold text-gray-900">Create SmartFM Account</h1>
+            <p className="text-gray-500 text-sm mt-1">Sign up to start managing your fleet in minutes.</p>
           </div>
 
           <div
@@ -206,7 +206,7 @@ export function Register() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Họ và tên</label>
+                <label className="text-sm font-medium text-gray-700">Full Name</label>
                 <div className="relative group">
                   <User className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
                   <input
@@ -214,7 +214,7 @@ export function Register() {
                     className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-gray-50 focus:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:-translate-y-0.5 ${
                       errors.fullName ? 'border-red-300' : 'border-gray-200 focus:border-blue-400'
                     }`}
-                    placeholder="Nguyễn Văn A"
+                    placeholder="John Doe"
                     autoComplete="name"
                   />
                 </div>
@@ -239,7 +239,7 @@ export function Register() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Mật khẩu</label>
+                <label className="text-sm font-medium text-gray-700">Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
                   <input
@@ -248,7 +248,7 @@ export function Register() {
                     className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-gray-50 focus:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:-translate-y-0.5 ${
                       errors.password ? 'border-red-300' : 'border-gray-200 focus:border-blue-400'
                     }`}
-                    placeholder="Tối thiểu 8 ký tự"
+                    placeholder="At least 8 characters"
                     autoComplete="new-password"
                   />
                 </div>
@@ -256,7 +256,7 @@ export function Register() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
+                <label className="text-sm font-medium text-gray-700">Confirm Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
                   <input
@@ -265,7 +265,7 @@ export function Register() {
                     className={`w-full pl-10 pr-10 py-3 rounded-xl border bg-gray-50 focus:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:-translate-y-0.5 ${
                       errors.confirmPassword ? 'border-red-300' : 'border-gray-200 focus:border-blue-400'
                     }`}
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder="Confirm your password"
                     autoComplete="new-password"
                   />
                   {passwordsMatch && (
@@ -277,7 +277,7 @@ export function Register() {
                 )}
                 {!errors.confirmPassword && passwordsMatch && (
                   <p className="text-emerald-600 text-xs flex items-center gap-1 sfm-pop">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Mật khẩu khớp
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Passwords match
                   </p>
                 )}
               </div>
@@ -291,16 +291,16 @@ export function Register() {
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    <CheckCircle2 className="w-5 h-5" /> Tạo tài khoản
+                    <CheckCircle2 className="w-5 h-5" /> Create Account
                   </>
                 )}
               </button>
             </form>
 
             <p className="text-center text-sm text-gray-500 mt-6">
-              Đã có tài khoản?{' '}
+              Already have an account?{' '}
               <Link to="/login" className="text-blue-600 font-semibold hover:underline">
-                Đăng nhập
+                Log in
               </Link>
             </p>
           </div>

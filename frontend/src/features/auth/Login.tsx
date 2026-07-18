@@ -19,8 +19,8 @@ import {
 import { useAuth } from './context/AuthContext';
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'Vui lòng nhập email').email('Email không hợp lệ'),
-  password: z.string().min(1, 'Vui lòng nhập mật khẩu'),
+  email: z.string().min(1, 'Please enter your email address.').email('Invalid email address'),
+  password: z.string().min(1, 'Please enter your password.'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -29,9 +29,9 @@ const ROUTE_PATH =
   'M 40,520 C 95,455 35,395 110,355 C 190,312 148,238 228,208 C 300,182 258,108 322,58';
 
 const FEATURES = [
-  { icon: Route, text: 'Tối ưu tuyến đường theo thời gian thực' },
-  { icon: MapPin, text: 'Theo dõi vị trí xe trực tiếp trên bản đồ' },
-  { icon: PackageCheck, text: 'Xác nhận giao hàng tức thì' },
+  { icon: Route, text: 'Optimize routes in real-time' },
+  { icon: MapPin, text: 'Track vehicle positions directly on the map' },
+  { icon: PackageCheck, text: 'Confirm deliveries instantly' },
 ];
 
 export function Login() {
@@ -59,7 +59,7 @@ export function Login() {
       const from = (location.state as { from?: Location })?.from?.pathname || '/';
       navigate(from, { replace: true });
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : 'Đăng nhập thất bại.');
+      setServerError(err instanceof Error ? err.message : 'Login failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -145,12 +145,12 @@ export function Login() {
           <div className="space-y-6 sfm-enter" style={{ animationDelay: '0.1s' }}>
             <div>
               <h2 className="text-white text-2xl font-bold leading-snug tracking-tight">
-                Vận hành đội xe của bạn,
+                Operate your fleet smarter,
                 <br />
-                thông minh hơn mỗi ngày.
+                every day.
               </h2>
               <p className="text-blue-200/80 text-sm mt-2">
-                Quản lý vận tải tập trung cho toàn bộ đội xe của bạn.
+                Centralized fleet management for all your vehicles.
               </p>
             </div>
             <ul className="space-y-3">
@@ -183,12 +183,12 @@ export function Login() {
               <Truck className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">SmartFM</h1>
-            <p className="text-gray-500 text-sm mt-1">Đăng nhập vào hệ thống quản lý vận tải</p>
+            <p className="text-gray-500 text-sm mt-1">Log in to your fleet management system</p>
           </div>
 
           <div className="hidden lg:block mb-8 sfm-enter">
-            <h1 className="text-2xl font-bold text-gray-900">Chào mừng trở lại</h1>
-            <p className="text-gray-500 text-sm mt-1">Đăng nhập để tiếp tục điều phối đội xe của bạn.</p>
+            <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+            <p className="text-gray-500 text-sm mt-1">Log in to continue managing your vehicle fleet.</p>
           </div>
 
           <div
@@ -222,7 +222,7 @@ export function Login() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">Mật khẩu</label>
+                  <label className="text-sm font-medium text-gray-700">Password</label>
                 </div>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
@@ -247,7 +247,7 @@ export function Login() {
                 </div>
                 {capsLockOn && (
                   <p className="text-amber-600 text-xs flex items-center gap-1">
-                    <TriangleAlert className="w-3.5 h-3.5" /> Phím Caps Lock đang bật
+                    <TriangleAlert className="w-3.5 h-3.5" /> Caps Lock is on
                   </p>
                 )}
                 {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
@@ -258,20 +258,20 @@ export function Login() {
                 disabled={isSubmitting}
                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:hover:translate-y-0 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-blue-500/20"
               >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Đăng nhập'}
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Log in'}
               </button>
             </form>
 
             <p className="text-center text-sm text-gray-500 mt-6">
-              Chưa có tài khoản?{' '}
+              Don't have an account?{' '}
               <Link to="/register" className="text-blue-600 font-semibold hover:underline">
-                Đăng ký ngay
+                Sign up now
               </Link>
             </p>
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6 sfm-enter" style={{ animationDelay: '0.2s' }}>
-            Tài khoản demo: admin@smartfm.vn / Admin123!
+            Demo account: admin@smartfm.vn / Admin123!
           </p>
         </div>
       </div>
