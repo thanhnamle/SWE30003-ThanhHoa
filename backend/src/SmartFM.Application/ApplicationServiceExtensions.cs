@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+using SmartFM.Application.Interfaces;
+using SmartFM.Application.Services;
 
 namespace SmartFM.Application;
 
@@ -7,9 +8,11 @@ public static class ApplicationServiceExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
-        
-        // Register FluentValidation and other services here
+        // Đăng ký các Service của Role 1 vào hệ thống
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IShipmentService, ShipmentService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ITrackingService, TrackingService>();
 
         return services;
     }
