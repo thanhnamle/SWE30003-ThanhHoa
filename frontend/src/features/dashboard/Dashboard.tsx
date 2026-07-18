@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { PageContainer } from "@/components/common/PageContainer";
 import { Package, Truck, DollarSign, Users, ArrowUpRight, ArrowDownRight, Plus } from "lucide-react";
 import { 
@@ -57,9 +58,9 @@ export function Dashboard() {
       description="A real-time snapshot of your fleet, shipments and revenue."
       action={
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors shadow-sm">
+          <Link to="/orders" className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors shadow-sm">
             <Plus className="w-4 h-4" /> New order
-          </button>
+          </Link>
         </div>
       }
     >
