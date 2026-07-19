@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartFM.Domain.Interfaces;
 using SmartFM.Infrastructure.Persistence;
+using SmartFM.Infrastructure.Repositories;
 
 namespace SmartFM.Infrastructure;
 
@@ -15,7 +17,7 @@ public static class InfrastructureServiceExtensions
                 ServerVersion.AutoDetect(configuration.GetConnectionString("SmartFM"))
             ));
 
-        // Register repositories here
+        services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
         return services;
     }
