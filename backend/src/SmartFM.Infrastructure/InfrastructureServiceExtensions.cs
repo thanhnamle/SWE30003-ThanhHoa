@@ -11,11 +11,19 @@ public static class InfrastructureServiceExtensions
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<SmartFmDbContext>(options =>
-            options.UseMySql(
-                configuration.GetConnectionString("SmartFM"),
-                ServerVersion.AutoDetect(configuration.GetConnectionString("SmartFM"))
-            ));
+        if (configuration["UseInMemoryDatabase"] == "true")
+        {
+            services.AddDbContext<SmartFmDbContext>(options =>
+                options.UseInMemoryDatabase("SmartFM_InMemory"));
+        }
+        else
+        {
+            services.AddDbContext<SmartFmDbContext>(options =>
+                options.UseMySql(
+                    configuration.GetConnectionString("SmartFM"),
+                    new MySqlServerVersion(new Version(8, 0, 30))
+                ));
+        }
 
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
