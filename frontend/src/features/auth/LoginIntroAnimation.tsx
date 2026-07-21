@@ -16,10 +16,10 @@ const PINS = [
 const CONFETTI_COLORS = ['#93C5FD', '#818CF8', '#34D399', '#FDE68A', '#FFFFFF'];
 
 const STAGES = [
-  { icon: PackageCheck, label: 'Đơn hàng sẵn sàng' },
-  { icon: Route, label: 'Tối ưu lộ trình' },
-  { icon: Truck, label: 'Giao hàng thần tốc' },
-  { icon: CheckCircle2, label: 'Chào mừng đến với SmartFM' },
+  { icon: PackageCheck, label: 'Order ready' },
+  { icon: Route, label: 'Optimize route' },
+  { icon: Truck, label: 'Fast delivery' },
+  { icon: CheckCircle2, label: 'Welcome to SmartFM' },
 ];
 
 const DURATION_MS = 4200;
@@ -252,7 +252,7 @@ export function LoginIntroAnimation({ onFinish }: { onFinish: () => void }) {
           style={{ animation: 'sfm2-rise 0.6s ease-out 0.15s both' }}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>SmartFM · Quản lý đội xe thông minh</span>
+          <span>SmartFM · Smart fleet management</span>
         </div>
       </div>
     </div>
