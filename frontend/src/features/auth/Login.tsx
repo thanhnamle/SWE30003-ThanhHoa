@@ -17,6 +17,7 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
+import { LoginIntroAnimation } from '@/features/auth/LoginIntroAnimation'; // Import component animation
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Please enter your email address.').email('Invalid email address'),
@@ -30,8 +31,8 @@ const ROUTE_PATH =
 
 const FEATURES = [
   { icon: Route, text: 'Optimize routes in real-time' },
-  { icon: MapPin, text: 'Track vehicle positions directly on the map' },
-  { icon: PackageCheck, text: 'Confirm deliveries instantly' },
+  { icon: MapPin, text: 'Track vehicle positions live' },
+  { icon: PackageCheck, text: 'Instant delivery confirmation' },
 ];
 
 export function Login() {
@@ -42,6 +43,9 @@ export function Login() {
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // State điều khiển việc hiển thị màn hình Intro Animation
+  const [showIntro, setShowIntro] = useState(false);
 
   const {
     register,
@@ -56,14 +60,25 @@ export function Login() {
     setIsSubmitting(true);
     try {
       await login(data);
-      const from = (location.state as { from?: Location })?.from?.pathname || '/';
-      navigate(from, { replace: true });
+      // Khi login thành công, bật màn hình Intro lên thay vì chuyển trang ngay
+      setShowIntro(true);
     } catch (err) {
       setServerError(err instanceof Error ? err.message : 'Login failed.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Hàm xử lý sau khi xe tải chạy xong
+  const handleAnimationFinish = () => {
+    const from = (location.state as { from?: Location })?.from?.pathname || '/';
+    navigate(from, { replace: true });
+  };
+
+  // Nếu showIntro = true, hiển thị màn hình xe tải chạy
+  if (showIntro) {
+    return <LoginIntroAnimation onFinish={handleAnimationFinish} />;
+  }
 
   return (
     <div className="min-h-screen w-full flex bg-slate-50">
