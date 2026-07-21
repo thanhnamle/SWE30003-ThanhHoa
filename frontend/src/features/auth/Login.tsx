@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
+import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,6 +16,7 @@ import {
   MapPin,
   PackageCheck,
   TriangleAlert,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 
@@ -56,8 +58,9 @@ export function Login() {
     setIsSubmitting(true);
     try {
       await login(data);
-      const from = (location.state as { from?: Location })?.from?.pathname || '/';
-      navigate(from, { replace: true });
+      const from = (location.state as { from?: Location })?.from?.pathname;
+      const target = from && from !== '/' ? from : '/dashboard';
+      navigate(target, { replace: true });
     } catch (err) {
       setServerError(err instanceof Error ? err.message : 'Login failed.');
     } finally {
@@ -66,7 +69,13 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-slate-50">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen w-full flex bg-slate-50"
+    >
       <style>{`
         @keyframes sfm-dash-flow { to { stroke-dashoffset: -240; } }
         @keyframes sfm-travel { from { offset-distance: 0%; } to { offset-distance: 100%; } }
@@ -178,6 +187,13 @@ export function Login() {
           aria-hidden
         />
         <div className="w-full max-w-md relative">
+          <Link 
+            to="/" 
+            className="absolute -top-12 left-0 flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors sfm-enter"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Home
+          </Link>
+
           <div className="flex flex-col items-center mb-8 lg:hidden sfm-enter">
             <div className="bg-blue-600 rounded-2xl p-3 shadow-lg shadow-blue-500/20 mb-4">
               <Truck className="w-7 h-7 text-white" />
@@ -275,6 +291,6 @@ export function Login() {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

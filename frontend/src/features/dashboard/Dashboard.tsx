@@ -66,7 +66,7 @@ export function Dashboard() {
       description="A real-time snapshot of your fleet, shipments and revenue."
       action={
         <div className="flex items-center gap-3">
-          <Link to="/orders" className="sfm-cta flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-sm">
+          <Link to="/dashboard/orders" className="sfm-cta flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-sm">
             <Plus className="w-4 h-4" /> New order
           </Link>
         </div>

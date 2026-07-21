@@ -14,6 +14,7 @@ import { Settings } from "./features/settings/Settings";
 import { Login } from "./features/auth/Login";
 import { Register } from "./features/auth/Register";
 import { useAuth } from "./features/auth/context/AuthContext";
+import { LandingPage } from "./features/landing/LandingPage";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,10 +33,11 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <AdminLayout />

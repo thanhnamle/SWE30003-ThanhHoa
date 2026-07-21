@@ -20,31 +20,31 @@ const navSections = [
   {
     title: "Operations",
     items: [
-      { name: "Dashboard", href: "/", icon: LayoutDashboard },
-      { name: "Customers", href: "/customers", icon: Users },
-      { name: "Orders", href: "/orders", icon: Package },
-      { name: "Shipments", href: "/shipments", icon: Map },
-      { name: "Tracking", href: "/tracking", icon: Navigation },
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Customers", href: "/dashboard/customers", icon: Users },
+      { name: "Orders", href: "/dashboard/orders", icon: Package },
+      { name: "Shipments", href: "/dashboard/shipments", icon: Map },
+      { name: "Tracking", href: "/dashboard/tracking", icon: Navigation },
     ],
   },
   {
     title: "Fleet",
     items: [
-      { name: "Vehicles", href: "/vehicles", icon: Truck },
-      { name: "Drivers", href: "/drivers", icon: Users },
+      { name: "Vehicles", href: "/dashboard/vehicles", icon: Truck },
+      { name: "Drivers", href: "/dashboard/drivers", icon: Users },
     ],
   },
   {
     title: "Finance",
     items: [
-      { name: "Payments", href: "/payments", icon: CreditCard },
-      { name: "Reports", href: "/reports", icon: FileText },
+      { name: "Payments", href: "/dashboard/payments", icon: CreditCard },
+      { name: "Reports", href: "/dashboard/reports", icon: FileText },
     ],
   },
   {
     title: "System",
     items: [
-      { name: "Settings", href: "/settings", icon: Settings },
+      { name: "Settings", href: "/dashboard/settings", icon: Settings },
     ],
   },
 ];
@@ -144,6 +144,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
 
                       <NavLink
                         to={item.href}
+                        end={item.href === "/dashboard"}
                         title={collapsed ? item.name : undefined}
                         className={({ isActive }) =>
                           cn(
