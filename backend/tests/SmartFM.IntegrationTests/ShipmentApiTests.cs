@@ -26,7 +26,6 @@ public class ShipmentApiTests : IClassFixture<CustomWebApplicationFactory<Progra
     [Fact]
     public async Task AssignResources_ValidData_ShouldReturn_200OK_AndShipmentDetails()
     {
-        // Arrange
         var request = new AssignResourcesDto
         {
             VehicleId = TestDataSeeder.VehicleAvailableId,
@@ -34,50 +33,42 @@ public class ShipmentApiTests : IClassFixture<CustomWebApplicationFactory<Progra
             ConflictNotes = "No conflicts detected"
         };
 
-        // Act
         var response = await _client.PostAsJsonAsync($"/api/shipments/{TestDataSeeder.ShipmentPreparingId}/assign", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         
         var result = await response.Content.ReadFromJsonAsync<ShipmentResponseDto>();
         result.Should().NotBeNull();
         result!.Id.Should().Be(TestDataSeeder.ShipmentPreparingId);
         result.Status.Should().Be(ShipmentStatus.ReadyForPickup);
-        result.Message.Should().Be("Phân công nguồn lực thành công!");
+        result.Message.Should().Be("Resources assigned successfully!");
     }
 
     [Fact]
     public async Task AssignResources_VehicleUnderMaintenance_ShouldReturn_400BadRequest()
     {
-        // Arrange
         var request = new AssignResourcesDto
         {
-            VehicleId = TestDataSeeder.VehicleMaintenanceId, // Under maintenance
+            VehicleId = TestDataSeeder.VehicleMaintenanceId,
             DriverId = TestDataSeeder.DriverAvailableId
         };
 
-        // Act
         var response = await _client.PostAsJsonAsync($"/api/shipments/{TestDataSeeder.ShipmentPreparingId}/assign", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task AssignResources_DriverOnLeave_ShouldReturn_400BadRequest()
     {
-        // Arrange
         var request = new AssignResourcesDto
         {
             VehicleId = TestDataSeeder.VehicleAvailableId,
-            DriverId = TestDataSeeder.DriverOnLeaveId // On leave
+            DriverId = TestDataSeeder.DriverOnLeaveId
         };
 
-        // Act
         var response = await _client.PostAsJsonAsync($"/api/shipments/{TestDataSeeder.ShipmentPreparingId}/assign", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
