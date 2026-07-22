@@ -223,7 +223,7 @@ export function Login() {
           </div>
 
           <div
-            className={`bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-3xl p-8 shadow-sm sfm-enter ${serverError ? 'sfm-shake' : ''}`}
+            className={`bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-3xl p-8 shadow-sm ${serverError ? 'sfm-shake opacity-100' : 'sfm-enter'}`}
             style={{ animationDelay: '0.1s' }}
           >
             {serverError && (

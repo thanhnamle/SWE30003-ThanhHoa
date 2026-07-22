@@ -1,24 +1,75 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { PageContainer } from "@/components/common/PageContainer";
+import { Modal } from "@/components/common/Modal";
 import { Driver, shipmentApi } from "../shipments/api/shipmentApi";
-import { User, IdCard, CheckCircle2, Clock, Fingerprint } from "lucide-react";
+import { User, IdCard, Clock, Fingerprint, UserPlus, Loader2 } from "lucide-react";
+
+const driverSchema = z.object({
+  fullName: z.string().min(1, 'Full name is required'),
+  licenseNumber: z.string().min(1, 'License number is required'),
+  branchId: z.string(),
+});
+
+type DriverFormValues = z.infer<typeof driverSchema>;
 
 export function Drivers() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<DriverFormValues>({
+    resolver: zodResolver(driverSchema),
+    defaultValues: {
+      branchId: '00000000-0000-0000-0000-000000000001'
+    }
+  });
 
   useEffect(() => {
-    // Note: shipmentApi.getDrivers() currently filters out drivers on leave.
-    // To see all 5 mock drivers including the one on leave, we'd normally adjust the API.
-    // For this demonstration, we are displaying the results exactly as provided by the API.
+    fetchDrivers();
+  }, []);
+
+  const fetchDrivers = () => {
+    setLoading(true);
     shipmentApi.getDrivers().then(data => {
       setDrivers(data);
       setLoading(false);
     });
-  }, []);
+  };
+
+  const onSubmit = async (data: DriverFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await shipmentApi.createDriver({
+        ...data,
+        isOnLeave: false
+      });
+      setIsModalOpen(false);
+      reset();
+      fetchDrivers();
+    } catch (error) {
+      console.error("Failed to create driver:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <PageContainer title="Drivers" description="Manage your fleet drivers.">
+    <PageContainer 
+      title="Drivers" 
+      description="Manage your fleet drivers."
+      action={
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="sfm-cta flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+        >
+          <UserPlus className="w-4 h-4" /> Add Driver
+        </button>
+      }
+    >
       <div className="pb-12 mt-6">
         
         {/* Loading Skeleton State */}
@@ -84,7 +135,7 @@ export function Drivers() {
 
                   <div className="relative z-10 mb-5">
                     <h3 className="text-2xl font-black text-gray-900 tracking-tight group-hover:text-blue-600 transition-colors duration-300">
-                      {driver.name}
+                      {driver.fullName}
                     </h3>
                   </div>
 
@@ -122,6 +173,52 @@ export function Drivers() {
           </div>
         )}
       </div>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        title="Add New Driver"
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input 
+              {...register('fullName')} 
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              placeholder="e.g. Jane Smith"
+            />
+            {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+            <input 
+              {...register('licenseNumber')} 
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              placeholder="e.g. B2-123456"
+            />
+            {errors.licenseNumber && <p className="text-red-500 text-xs mt-1">{errors.licenseNumber.message}</p>}
+          </div>
+
+          <div className="pt-4 border-t border-gray-100 flex justify-end gap-3 mt-6">
+            <button 
+              type="button" 
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Driver
+            </button>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

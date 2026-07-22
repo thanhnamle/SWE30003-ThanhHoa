@@ -259,7 +259,7 @@ export function Shipments() {
                       </label>
                       <select {...register('driverId')} className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none cursor-pointer">
                         <option value="">-- Choose available driver --</option>
-                        {drivers?.map(d => <option key={d.id} value={d.id}>{d.name} ({d.licenseNumber})</option>)}
+                        {drivers?.map(d => <option key={d.id} value={d.id}>{d.fullName} ({d.licenseNumber})</option>)}
                       </select>
                       {errors.driverId && <p className="text-red-500 text-xs font-semibold animate-pulse">{errors.driverId.message}</p>}
                     </div>

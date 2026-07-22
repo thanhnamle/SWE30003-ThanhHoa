@@ -98,7 +98,7 @@ export function Payments() {
             <div>
               <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Total Collected</p>
               <p className="text-3xl md:text-4xl font-black text-white tracking-tight">
-                {formatCurrency(receipts?.reduce((sum, r) => sum + r.amountPaid, 0) || 0)}
+                {formatCurrency(receipts?.reduce((sum, r) => sum + r.settledAmount, 0) || 0)}
               </p>
             </div>
           </div>
@@ -139,7 +139,7 @@ export function Payments() {
                           <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                           <span className="text-xs font-semibold text-gray-500">Order: {invoice.orderId}</span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900">{invoice.customerName}</h3>
+                        <h3 className="text-lg font-bold text-gray-900">Order: {invoice.orderId.split('-')[0]}</h3>
                       </div>
                     </div>
                     <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2">
@@ -152,7 +152,7 @@ export function Payments() {
                     <div className="mt-5 pt-5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div className="flex items-center gap-2 text-sm font-semibold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                         <Clock className="w-4 h-4 text-gray-400" /> 
-                        Due {new Date(invoice.dueDate).toLocaleDateString()}
+                        Issued {new Date(invoice.issuedAt).toLocaleDateString()}
                       </div>
                       <button
                         onClick={() => setSelectedInvoice(invoice)}
@@ -193,16 +193,16 @@ export function Payments() {
                     style={{ animationDelay: `${idx * 100}ms`, animationFillMode: 'both' }}
                   >
                     <div>
-                      <span className="font-mono text-sm font-black text-gray-900 block mb-1">{receipt.id}</span>
+                      <span className="font-mono text-sm font-black text-gray-900 block mb-1">{receipt.id.split('-')[0]}</span>
                       <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                        <span>Inv: {receipt.invoiceId}</span>
+                        <span>Pmt: {receipt.paymentId.split('-')[0]}</span>
                         <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                        <span className="text-blue-600">{receipt.paymentMethod}</span>
+                        <span className="text-blue-600 truncate max-w-[120px]">{receipt.transactionReference}</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="font-black text-emerald-600 block mb-1">{formatCurrency(receipt.amountPaid)}</span>
-                      <div className="text-xs font-semibold text-gray-400">{new Date(receipt.paymentDate).toLocaleDateString()}</div>
+                      <span className="font-black text-emerald-600 block mb-1">{formatCurrency(receipt.settledAmount)}</span>
+                      <div className="text-xs font-semibold text-gray-500">Issued: {new Date(receipt.issuedAt).toLocaleDateString()}</div>
                     </div>
                   </div>
                 ))}
@@ -244,7 +244,7 @@ export function Payments() {
                 </div>
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</span>
-                  <span className="text-sm font-bold text-gray-900">{selectedInvoice.customerName}</span>
+                  <span className="text-sm font-bold text-gray-900">{selectedInvoice.orderId.split('-')[0]}</span>
                 </div>
                 <div className="flex justify-between items-end pt-4 border-t border-blue-200/60">
                   <span className="text-sm font-black text-gray-900">Total Amount Due</span>

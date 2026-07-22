@@ -25,8 +25,8 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
       if (queryKey[0] === 'invoices') {
         return {
           data: [
-            { id: 'inv1', orderId: 'ord1', customerId: 'c1', customerName: 'VinFast', amount: 500, status: 'Pending', dueDate: new Date().toISOString(), createdAt: new Date().toISOString() },
-            { id: 'inv2', orderId: 'ord2', customerId: 'c2', customerName: 'Samsung', amount: 300, status: 'Paid', dueDate: new Date().toISOString(), createdAt: new Date().toISOString() },
+            { id: 'inv1', orderId: 'ord1', customerId: 'c1', customerName: 'VinFast', amount: 500, status: 'Pending', issuedAt: new Date().toISOString(), dueDate: new Date().toISOString(), createdAt: new Date().toISOString() },
+            { id: 'inv2', orderId: 'ord2', customerId: 'c2', customerName: 'Samsung', amount: 300, status: 'Paid', issuedAt: new Date().toISOString(), dueDate: new Date().toISOString(), createdAt: new Date().toISOString() },
           ],
           isLoading: false,
         };

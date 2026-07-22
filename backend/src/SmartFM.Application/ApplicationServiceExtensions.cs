@@ -13,6 +13,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IShipmentService, ShipmentService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ITrackingService, TrackingService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

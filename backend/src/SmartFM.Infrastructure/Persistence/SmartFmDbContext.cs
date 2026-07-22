@@ -25,6 +25,7 @@ public class SmartFmDbContext : DbContext
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<TrackingRecord> TrackingRecords => Set<TrackingRecord>();
     public DbSet<DeliveryException> DeliveryExceptions => Set<DeliveryException>();
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +33,7 @@ public class SmartFmDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartFmDbContext).Assembly);
 
         SeedReferenceData(modelBuilder);
+        SeedUsers(modelBuilder);
     }
 
     private static void SeedReferenceData(ModelBuilder modelBuilder)
@@ -83,6 +85,20 @@ public class SmartFmDbContext : DbContext
             FeePerKm = 15000,
             IsActive = true,
             CreatedAt = new DateTime(2026, 1, 1)
+        });
+    }
+
+    private static void SeedUsers(ModelBuilder modelBuilder)
+    {
+        // Default admin – password: Admin123!
+        modelBuilder.Entity<AppUser>().HasData(new AppUser
+        {
+            Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
+            FullName = "System Administrator",
+            Email = "admin@smartfm.vn",
+            PasswordHash = "$2a$11$K9lZlSHAf.vn5SZ1fU5eyuG7GZKF4PKV4qpBKGb2WkU0.JIwNRmxu", // Admin123!
+            Role = "Admin",
+            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         });
     }
 }
