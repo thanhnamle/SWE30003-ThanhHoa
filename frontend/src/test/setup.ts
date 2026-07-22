@@ -2,6 +2,14 @@ import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
+// Mock SVGPathElement methods missing in JSDOM
+if (typeof window !== 'undefined') {
+  if (typeof SVGElement !== 'undefined') {
+    (SVGElement.prototype as any).getTotalLength = () => 100;
+    (SVGElement.prototype as any).getPointAtLength = () => ({ x: 0, y: 0 });
+  }
+}
+
 // Mock Recharts to avoid ResizeObserver and ResponsiveContainer errors/warnings in JSDOM
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: any) => children,

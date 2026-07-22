@@ -13,7 +13,7 @@ vi.mock('@/features/auth/context/AuthContext', () => ({
   }),
 }));
 
-// Mock React Query directly to avoid any async query client issues
+// Mock React Query directly
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
   return {
@@ -34,7 +34,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
       if (queryKey[0] === 'receipts') {
         return {
           data: [
-            { id: 'rc1', invoiceId: 'inv2', amountPaid: 300, paymentDate: new Date().toISOString(), paymentMethod: 'CreditCard', referenceNumber: 'TRX-123' },
+            { id: 'rc1', invoiceId: 'inv2', paymentId: 'pay1-uuid', amountPaid: 300, paymentDate: new Date().toISOString(), paymentMethod: 'CreditCard', referenceNumber: 'TRX-123' },
           ],
           isLoading: false,
         };

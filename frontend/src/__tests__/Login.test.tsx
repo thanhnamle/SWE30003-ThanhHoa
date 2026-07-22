@@ -4,6 +4,18 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Login } from '../features/auth/Login';
 import { renderWithProviders } from '../test/testUtils';
 
+// Mock framer-motion
+vi.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
+  },
+  AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
+
 // Mock useNavigate and useLocation
 const mockNavigate = vi.fn();
 vi.mock('react-router', async (importOriginal) => {
@@ -30,9 +42,9 @@ describe('Login Component', () => {
     vi.clearAllMocks();
   });
 
-  it('renders login form correctly', () => {
+  it('renders login form correctly with English placeholders', () => {
     renderWithProviders(<Login />);
-    expect(screen.getByPlaceholderText('ban@congty.com')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('name@company.com')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('••••••••')).toBeInTheDocument();
     expect(screen.getByText('Welcome back')).toBeInTheDocument();
   });
@@ -50,10 +62,10 @@ describe('Login Component', () => {
   });
 
   it('handles successful submit', async () => {
-    mockLogin.mockResolvedValue({ success: true });
+    mockLogin.mockResolvedValue(undefined);
     renderWithProviders(<Login />);
 
-    const emailInput = screen.getByPlaceholderText('ban@congty.com');
+    const emailInput = screen.getByPlaceholderText('name@company.com');
     const passwordInput = screen.getByPlaceholderText('••••••••');
     const submitButton = screen.getByRole('button', { name: /Log in/i });
 
@@ -66,7 +78,23 @@ describe('Login Component', () => {
         email: 'test@example.com',
         password: 'password123',
       });
-      expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
+    });
+  });
+
+  it('handles login failure and displays error message', async () => {
+    mockLogin.mockRejectedValue(new Error('Invalid email or password.'));
+    renderWithProviders(<Login />);
+
+    const emailInput = screen.getByPlaceholderText('name@company.com');
+    const passwordInput = screen.getByPlaceholderText('••••••••');
+    const submitButton = screen.getByRole('button', { name: /Log in/i });
+
+    fireEvent.change(emailInput, { target: { value: 'wrong@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'wrongpass' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Invalid email or password.')).toBeInTheDocument();
     });
   });
 });

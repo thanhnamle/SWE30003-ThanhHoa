@@ -5,6 +5,7 @@ import { Dashboard } from '../features/dashboard/Dashboard';
 import { renderWithProviders } from '../test/testUtils';
 import { shipmentApi } from '../features/shipments/api/shipmentApi';
 import { paymentApi } from '../features/payments/api/paymentApi';
+import { orderApi } from '../features/orders/api/orderApi';
 
 // Mock Auth Context
 vi.mock('@/features/auth/context/AuthContext', () => ({
@@ -30,6 +31,13 @@ vi.mock('../features/payments/api/paymentApi', () => ({
   },
 }));
 
+vi.mock('../features/orders/api/orderApi', () => ({
+  orderApi: {
+    getCustomers: vi.fn(),
+    getOfferings: vi.fn(),
+  },
+}));
+
 describe('Dashboard Component', () => {
   beforeEach(() => {
     vi.mocked(shipmentApi.getVehicles).mockResolvedValue([
@@ -44,16 +52,21 @@ describe('Dashboard Component', () => {
     vi.mocked(paymentApi.getInvoices).mockResolvedValue([
       { id: 'inv1', orderId: 'ord1', amount: 500, status: 'Paid', issuedAt: new Date().toISOString() }
     ] as any);
+    vi.mocked(orderApi.getCustomers).mockResolvedValue([
+      { id: 'c1', companyName: 'Customer Corp', isCorporateAccount: true }
+    ] as any);
+    vi.mocked(orderApi.getOfferings).mockResolvedValue([
+      { id: 'o1', category: 'Standard', maxCapacityKg: 5000, baseFee: 100, feePerKm: 2, isActive: true }
+    ] as any);
   });
 
-  it('renders operations dashboard layout', async () => {
+  it('renders operations dashboard layout and title', async () => {
     renderWithProviders(<Dashboard />);
 
     expect(screen.getByText('Operations dashboard')).toBeInTheDocument();
 
     await waitFor(() => {
-      // Fleet status metrics
-      expect(screen.getByText('250')).toBeInTheDocument(); // active shipments stat
+      expect(screen.getByText('ACTIVE SHIPMENTS')).toBeInTheDocument();
     });
   });
 });

@@ -1,10 +1,10 @@
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Shipments } from '../features/shipments/Shipments';
 import { renderWithProviders } from '../test/testUtils';
 
-// Mock the Auth Context
+// Mock Auth Context
 vi.mock('@/features/auth/context/AuthContext', () => ({
   useAuth: () => ({
     isAuthenticated: true,
@@ -13,22 +13,20 @@ vi.mock('@/features/auth/context/AuthContext', () => ({
   }),
 }));
 
-// Mock React Query directly to avoid any async query client issues
+// Mock React Query
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
   return {
     ...actual,
-    useQueryClient: () => ({
-      invalidateQueries: vi.fn(),
-    }),
-    useQuery: ({ queryKey }: any) => {
+    useQuery: ({ queryKey }: { queryKey: string[] }) => {
       if (queryKey[0] === 'shipments') {
         return {
           data: [
-            { id: 'ship1', orderId: 'ord1', status: 'Preparing', createdAt: new Date().toISOString() },
-            { id: 'ship2', orderId: 'ord2', status: 'ReadyForPickup', createdAt: new Date().toISOString() },
+            { id: 'ship1-uuid', orderId: 'ord1-uuid', status: 'Preparing', createdAt: new Date().toISOString() },
+            { id: 'ship2-uuid', orderId: 'ord2-uuid', status: 'InTransit', createdAt: new Date().toISOString() },
           ],
           isLoading: false,
+          error: null,
         };
       }
       if (queryKey[0] === 'vehicles') {
@@ -37,26 +35,26 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
             { id: 'v1', plateNumber: '29A-11111', type: 'Van', maxPayloadKg: 1000, maxVolumeM3: 5, isUnderMaintenance: false },
           ],
           isLoading: false,
+          error: null,
         };
       }
       if (queryKey[0] === 'drivers') {
         return {
           data: [
-            { id: 'd1', name: 'Nguyen Van A', licenseNumber: 'B2-111', isOnLeave: false },
+            { id: 'd1', fullName: 'John Doe', licenseNumber: 'B2-111', isOnLeave: false },
           ],
           isLoading: false,
+          error: null,
         };
       }
-      return { data: [], isLoading: false };
+      return { data: [], isLoading: false, error: null };
     },
-    useMutation: ({ onSuccess }: any) => {
+    useMutation: () => {
       return {
-        mutate: (variables: any) => {
-          if (onSuccess) onSuccess();
-        },
-        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn().mockResolvedValue({ status: 'ReadyForPickup' }),
+        isLoading: false,
         isSuccess: false,
-        isError: false,
         error: null,
       };
     },
@@ -79,7 +77,7 @@ describe('Shipments Component', () => {
 
     expect(screen.getByText('Resource Assignment')).toBeInTheDocument();
     expect(screen.getByText('29A-11111 (Van)')).toBeInTheDocument();
-    expect(screen.getByText('Nguyen Van A (B2-111)')).toBeInTheDocument();
+    expect(screen.getByText('John Doe (B2-111)')).toBeInTheDocument();
   });
 
   it('validates required fields in assignment form', async () => {
