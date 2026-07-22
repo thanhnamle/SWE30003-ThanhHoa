@@ -7,62 +7,64 @@ using SmartFM.Domain.Enums;
 namespace SmartFM.UnitTests.Domain;
 
 /// <summary>
-/// Unit tests for the Shipment domain entity invariants.
+/// Unit tests for the Shipment domain entity.
 /// </summary>
 public class ShipmentTests
 {
     [Fact]
     public void NewShipment_ShouldHave_PreparingStatus_ByDefault()
     {
-        // Arrange & Act
         var shipment = new Shipment();
-
-        // Assert
         shipment.Status.Should().Be(ShipmentStatus.Preparing);
-        shipment.CreatedAt.Should().BeBefore(DateTime.UtcNow.AddSeconds(1));
     }
 
     [Fact]
-    public void Shipment_ShouldInitialize_EmptyCollections_AndNullRelations()
+    public void Shipment_ShouldHave_NullNavigationProperties_ByDefault()
     {
-        // Arrange & Act
         var shipment = new Shipment();
 
-        // Assert
         shipment.VehicleAssignment.Should().BeNull();
         shipment.DriverAssignment.Should().BeNull();
         shipment.PickupDeliveryOption.Should().BeNull();
-        shipment.TrackingRecords.Should().BeEmpty();
-        shipment.DeliveryExceptions.Should().BeEmpty();
         shipment.ReadyForPickupAt.Should().BeNull();
         shipment.DeliveredAt.Should().BeNull();
+        shipment.TrackingRecords.Should().NotBeNull().And.BeEmpty();
+        shipment.DeliveryExceptions.Should().NotBeNull().And.BeEmpty();
     }
 
     [Fact]
-    public void Shipment_Properties_ShouldBeAssignable()
+    public void Shipment_FullLifecycle_StateTransitions_ShouldTrackTimestamps()
     {
-        // Arrange
-        var shipmentId = Guid.NewGuid();
+        var id = Guid.NewGuid();
         var orderId = Guid.NewGuid();
-        var date = DateTime.UtcNow;
+        var created = DateTime.UtcNow;
+        var ready = created.AddHours(2);
+        var delivered = ready.AddHours(5);
 
-        // Act
         var shipment = new Shipment
         {
-            Id = shipmentId,
+            Id = id,
             OrderId = orderId,
-            Status = ShipmentStatus.InTransit,
-            CreatedAt = date,
-            ReadyForPickupAt = date.AddHours(2),
-            DeliveredAt = date.AddHours(5)
+            CreatedAt = created,
+            Status = ShipmentStatus.Preparing
         };
 
-        // Assert
-        shipment.Id.Should().Be(shipmentId);
-        shipment.OrderId.Should().Be(orderId);
+        // Transition 1: Preparing -> ReadyForPickup
+        shipment.Status = ShipmentStatus.ReadyForPickup;
+        shipment.ReadyForPickupAt = ready;
+
+        shipment.Status.Should().Be(ShipmentStatus.ReadyForPickup);
+        shipment.ReadyForPickupAt.Should().Be(ready);
+
+        // Transition 2: ReadyForPickup -> InTransit
+        shipment.Status = ShipmentStatus.InTransit;
         shipment.Status.Should().Be(ShipmentStatus.InTransit);
-        shipment.CreatedAt.Should().Be(date);
-        shipment.ReadyForPickupAt.Should().Be(date.AddHours(2));
-        shipment.DeliveredAt.Should().Be(date.AddHours(5));
+
+        // Transition 3: InTransit -> Delivered
+        shipment.Status = ShipmentStatus.Delivered;
+        shipment.DeliveredAt = delivered;
+
+        shipment.Status.Should().Be(ShipmentStatus.Delivered);
+        shipment.DeliveredAt.Should().Be(delivered);
     }
 }

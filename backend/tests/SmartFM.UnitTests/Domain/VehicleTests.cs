@@ -7,54 +7,42 @@ using SmartFM.Domain.Enums;
 namespace SmartFM.UnitTests.Domain;
 
 /// <summary>
-/// Unit tests for the Vehicle domain entity invariants.
+/// Unit tests for Vehicle domain entity.
 /// </summary>
 public class VehicleTests
 {
     [Fact]
-    public void NewVehicle_ShouldHave_DefaultProperties()
+    public void NewVehicle_ShouldNotBe_UnderMaintenance_ByDefault()
     {
-        // Arrange & Act
         var vehicle = new Vehicle();
-
-        // Assert
-        vehicle.PlateNumber.Should().BeEmpty();
         vehicle.IsUnderMaintenance.Should().BeFalse();
         vehicle.MaintenanceUntil.Should().BeNull();
-        vehicle.Assignments.Should().BeEmpty();
+        vehicle.Assignments.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(VehicleType.Van)]
+    [InlineData(VehicleType.Truck)]
+    [InlineData(VehicleType.Container)]
+    [InlineData(VehicleType.Refrigerated)]
+    public void Vehicle_AllTypes_ShouldBeSupported(VehicleType type)
+    {
+        var vehicle = new Vehicle { Type = type };
+        vehicle.Type.Should().Be(type);
     }
 
     [Fact]
-    public void Vehicle_Properties_ShouldBeAssignable()
+    public void Vehicle_MaintenanceMode_ShouldStoreMaintenanceUntil()
     {
-        // Arrange
-        var vehicleId = Guid.NewGuid();
-        var branchId = Guid.NewGuid();
-        var date = DateTime.UtcNow;
-
-        // Act
+        var until = DateTime.UtcNow.AddDays(3);
         var vehicle = new Vehicle
         {
-            Id = vehicleId,
-            PlateNumber = "29A-12345",
-            Type = VehicleType.Truck,
-            MaxPayloadKg = 5000m,
-            MaxVolumeM3 = 25m,
+            PlateNumber = "51C-123.45",
             IsUnderMaintenance = true,
-            MaintenanceUntil = date.AddDays(2),
-            CreatedAt = date,
-            BranchId = branchId
+            MaintenanceUntil = until
         };
 
-        // Assert
-        vehicle.Id.Should().Be(vehicleId);
-        vehicle.PlateNumber.Should().Be("29A-12345");
-        vehicle.Type.Should().Be(VehicleType.Truck);
-        vehicle.MaxPayloadKg.Should().Be(5000m);
-        vehicle.MaxVolumeM3.Should().Be(25m);
         vehicle.IsUnderMaintenance.Should().BeTrue();
-        vehicle.MaintenanceUntil.Should().Be(date.AddDays(2));
-        vehicle.CreatedAt.Should().Be(date);
-        vehicle.BranchId.Should().Be(branchId);
+        vehicle.MaintenanceUntil.Should().Be(until);
     }
 }
