@@ -1,23 +1,41 @@
-import { Link } from 'react-router';
-import { Truck, ArrowRight } from 'lucide-react';
-import React, { useState } from 'react';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { Link, useNavigate, useLocation } from 'react-router';
+import { ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { SmartFMLogo } from '../../../components/common/SmartFMLogo';
 
 export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
-  const { scrollY } = useScroll();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    setScrolled(latest > 20);
-  });
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    const element = document.getElementById(id);
-    if (element) {
-      const yOffset = -80; // Offset for sticky navbar
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          const yOffset = -80;
+          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        const yOffset = -80; // Offset for sticky navbar
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     }
   };
 
@@ -46,20 +64,28 @@ export const Navbar = () => {
         }`}
       >
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link 
+          to="/" 
+          onClick={(e) => {
+            if (location.pathname === '/') {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+          className="flex items-center gap-3 group"
+        >
           <motion.div
             whileHover={{ rotate: -8, scale: 1.08 }}
             transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20"
           >
-            <Truck className="h-6 w-6" />
+            <SmartFMLogo className="h-11 w-11" />
           </motion.div>
           <span className="text-2xl font-extrabold tracking-tight text-slate-900">
             Smart<span className="text-blue-600">FM</span>
           </span>
         </Link>
 
-        {/* Navigation Links, with animated underline on hover */}
+        {/* Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
           {navLinks.map((link) => (
             <a
@@ -69,7 +95,7 @@ export const Navbar = () => {
               className="relative py-1 group hover:text-blue-600 transition-colors"
             >
               {link.label}
-              <span className="absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 w-0 bg-blue-600 rounded-full group-hover:w-full transition-all duration-300 ease-out" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 rounded-full group-hover:w-full transition-all duration-300" />
             </a>
           ))}
         </nav>
@@ -84,11 +110,11 @@ export const Navbar = () => {
           </Link>
           <Link
             to="/login"
-            className="relative inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden group"
+            className="relative inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all overflow-hidden group"
           >
-            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12" />
+            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
             Request a Free Demo
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
       </div>

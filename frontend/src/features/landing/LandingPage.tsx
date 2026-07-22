@@ -4,10 +4,11 @@ import { Statistics } from './components/Statistics';
 import { HowItWorks } from './components/HowItWorks';
 import { Features } from './components/Features';
 import { AboutUs } from './components/AboutUs';
-import { SubHero } from './components/SubHero';
 import { Testimonials } from './components/Testimonials';
+import { SubHero } from './components/SubHero';
 import { Footer } from './components/Footer';
 import { ScrollBlobs } from './components/ScrollBlobs';
+import { ScrollIndicator } from './components/ScrollIndicator';
 import { motion } from 'framer-motion';
 
 export const LandingPage = () => {
@@ -18,6 +19,9 @@ export const LandingPage = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen flex flex-col font-sans selection:bg-blue-200"
     >
+      {/* Top Progress Bar, Right-side Dot Nav & Scroll To Top Floating Button */}
+      <ScrollIndicator />
+
       {/* Ambient scroll-linked color blobs, sit behind all sections */}
       <ScrollBlobs />
 

@@ -1,98 +1,90 @@
-import { ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
-
 export const SubHero = () => {
   return (
-    <section id="pricing" className="py-20 bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white relative overflow-hidden">
-      {/* Breathing glow effects */}
-      <motion.div
-        animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.35, 0.2] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"
-      />
-      <motion.div
-        animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.3, 0.15] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
-        className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"
-      />
+    <section id="pricing" className="py-24 bg-slate-50/80 border-t border-slate-200/80 relative overflow-hidden">
+      {/* Soft Background Orbs */}
+      <div className="absolute top-10 right-10 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-96 h-96 bg-cyan-300/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="flex flex-col lg:flex-row items-center justify-between gap-12 bg-white/5 border border-white/15 rounded-3xl p-8 lg:p-12 backdrop-blur-xl"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.6 }}
+          className="relative rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 p-8 lg:p-14 text-white shadow-2xl shadow-blue-600/20 overflow-hidden"
         >
+          {/* Subtle Grid Overlay on Card */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-10"
+            style={{
+              backgroundImage:
+                'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)',
+              backgroundSize: '36px 36px',
+            }}
+          />
 
-          <div className="flex-1 text-center lg:text-left">
-            <motion.span
-              variants={itemVariants}
-              className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-cyan-300 bg-cyan-950/60 px-3.5 py-1.5 rounded-full border border-cyan-500/30 mb-4"
-            >
-              <motion.span
-                animate={{ rotate: [0, 15, -15, 0] }}
-                transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2.5, ease: 'easeInOut' }}
-              >
-                <Zap className="h-3.5 w-3.5" />
-              </motion.span>
-              Ready to Upgrade?
-            </motion.span>
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
+            
+            {/* Left Content */}
+            <div className="flex-1 text-center lg:text-left">
+              <span className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-cyan-200 bg-white/10 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md mb-6 shadow-sm">
+                <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+                Ready to Upgrade Your Fleet?
+              </span>
 
-            <motion.h2 variants={itemVariants} className="text-3xl lg:text-4xl font-black uppercase tracking-tight mb-4 leading-tight">
-              SMARTFM: REVOLUTIONIZE YOUR FLEET MANAGEMENT
-            </motion.h2>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-6 leading-tight">
+                Transform Your Fleet Operations Today
+              </h2>
 
-            <motion.p variants={itemVariants} className="text-blue-100/80 text-base max-w-xl mb-8 leading-relaxed">
-              Join over 1,200+ logistics companies operating smarter, faster, and more economically every day with SmartFM.
-            </motion.p>
+              <p className="text-blue-100 text-base md:text-lg max-w-xl mb-8 leading-relaxed font-normal">
+                Join over 1,200+ enterprise fleet operators cutting costs by 30% and maximizing driver safety with SmartFM.
+              </p>
 
-            <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-              <Link
-                to="/login"
-                className="relative inline-flex items-center gap-3 rounded-xl bg-cyan-400 text-slate-950 font-black px-8 py-4 text-sm uppercase tracking-wider hover:bg-cyan-300 shadow-lg shadow-cyan-400/20 hover:shadow-cyan-400/40 hover:-translate-y-0.5 transition-all overflow-hidden group"
-              >
-                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
-                REQUEST A FREE DEMO
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-6">
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-xl bg-white text-blue-700 font-extrabold px-8 py-4 text-sm uppercase tracking-wider hover:bg-blue-50 shadow-lg shadow-black/10 hover:shadow-xl hover:-translate-y-0.5 transition-all group"
+                >
+                  REQUEST A FREE DEMO
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
 
-              <div className="flex items-center gap-2 text-xs font-semibold text-blue-200">
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                <span>Instant Setup • Cancel Anytime</span>
+                <Link
+                  to="/pricing"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/20 backdrop-blur-md text-white font-bold px-7 py-4 text-sm hover:bg-white/20 transition-all"
+                >
+                  Explore Pricing
+                </Link>
               </div>
-            </motion.div>
-          </div>
 
-          <motion.div variants={itemVariants} className="relative w-full lg:w-96">
-            <div className="w-full rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-slate-950/80 p-2 group">
-              <img
-                src="/subhero-graphic.png"
-                alt="SmartFM Fleet Management Dashboard Preview"
-                className="w-full h-auto rounded-xl object-cover transform group-hover:scale-105 transition-transform duration-700"
-              />
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs font-medium text-blue-100/90 pt-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-cyan-300" />
+                  <span>14-Day Free Trial</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-cyan-300" />
+                  <span>Instant API Setup</span>
+                </div>
+              </div>
             </div>
-            {/* Soft glow ring behind the preview */}
-            <div className="absolute -inset-3 -z-10 bg-gradient-to-br from-cyan-400/20 via-blue-400/10 to-indigo-400/20 blur-2xl rounded-[2rem]" />
-          </motion.div>
 
+            {/* Right Side Laptop/Dashboard Preview Graphic */}
+            <div className="relative w-full lg:w-[420px] shrink-0">
+              <div className="rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-slate-900 p-2 group">
+                <img
+                  src="/subhero-graphic.png"
+                  alt="SmartFM Fleet Management Dashboard Preview"
+                  className="w-full h-auto rounded-xl object-cover transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            </div>
+
+          </div>
         </motion.div>
       </div>
     </section>

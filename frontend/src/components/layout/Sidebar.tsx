@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, Link, useNavigate } from "react-router";
 import {
   LayoutDashboard,
   Users,
@@ -15,6 +15,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "../../features/auth/context/AuthContext";
+import { SmartFMLogo } from "../common/SmartFMLogo";
 
 const navSections = [
   {
@@ -76,16 +77,17 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
 
       <div className="relative border-b border-slate-100 px-6 py-6">
 
-        <div
+        <Link
+          to="/"
+          title="Back to Home"
           className={cn(
-            "flex items-center",
+            "flex items-center cursor-pointer group",
             collapsed ? "justify-center" : "gap-4"
           )}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 shadow-lg transition duration-300 hover:rotate-6 hover:scale-105">
 
-            <Truck className="h-7 w-7 text-white" />
-
+          <div className="transition duration-300 group-hover:rotate-6 group-hover:scale-105">
+            <SmartFMLogo className="h-12 w-12" />
           </div>
 
           {!collapsed && (
@@ -94,7 +96,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
 
               <div className="flex items-center gap-2">
 
-                <h2 className="text-xl font-bold tracking-tight text-slate-900">
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
                   SmartFM
                 </h2>
 
@@ -110,7 +112,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
 
           )}
 
-        </div>
+        </Link>
 
       </div>
 

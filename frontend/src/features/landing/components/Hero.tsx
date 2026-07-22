@@ -20,7 +20,7 @@ const itemVariants = {
 
 export const Hero = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/70 via-slate-50/70 to-white/70 py-20 lg:py-28">
+    <section id="hero" className="relative overflow-hidden bg-gradient-to-b from-blue-50/70 via-slate-50/70 to-white/70 py-20 lg:py-28">
       {/* Local keyframes: animated gradient text */}
       <style>{`
         @keyframes gradientShift {
@@ -81,15 +81,18 @@ export const Hero = () => {
               Smart Fleet Management Platform
             </motion.div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] tracking-tight uppercase mb-6">
-              <motion.span variants={itemVariants} className="block">
-                SMARTFM:
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.18] tracking-tight mb-6">
+              <motion.span variants={itemVariants} className="block text-slate-500 font-semibold text-xl md:text-2xl mb-2 tracking-normal uppercase">
+                SmartFM Ecosystem
               </motion.span>
-              <motion.span
-                variants={itemVariants}
-                className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent animate-gradient-text"
-              >
-                REVOLUTIONIZE YOUR FLEET MANAGEMENT
+              <motion.span variants={itemVariants} className="block font-black text-slate-900">
+                Revolutionize Your{' '}
+                <span className="relative inline-block">
+                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent animate-gradient-text">
+                    Fleet Operations
+                  </span>
+                  <span className="absolute -bottom-1.5 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 rounded-full opacity-75 shadow-sm" />
+                </span>
               </motion.span>
             </h1>
 
