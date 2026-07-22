@@ -29,18 +29,29 @@ export const Statistics = () => {
     },
   ];
 
+  // Duplicate the list so the track can loop seamlessly (0% -> -50%)
+  const loopStats = [...stats, ...stats];
+
   return (
-    <section className="py-12 bg-white border-y border-slate-200/80 shadow-sm relative z-20">
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <motion.div
+    <section className="py-12 bg-white/75 backdrop-blur-sm border-y border-slate-200/80 shadow-sm relative z-20 overflow-hidden">
+      {/* Fade edges so cards don't hard-cut at the container border */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-16 lg:w-32 bg-gradient-to-r from-white/75 to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-16 lg:w-32 bg-gradient-to-l from-white/75 to-transparent z-10" />
+
+      <div className="relative">
+        <motion.div
+          className="flex gap-6"
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{
+            duration: 22,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+        >
+          {loopStats.map((stat, index) => (
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="flex flex-col items-center text-center p-4 rounded-2xl hover:bg-slate-50 transition-colors"
+              className="flex flex-col items-center text-center p-4 rounded-2xl hover:bg-slate-50 transition-colors shrink-0 w-56 lg:w-64"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 mb-4 border border-blue-100 shadow-sm">
                 {stat.icon}
@@ -54,9 +65,9 @@ export const Statistics = () => {
               <span className="text-xs text-slate-500 font-medium">
                 {stat.description}
               </span>
-            </motion.div>
+            </div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

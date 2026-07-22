@@ -27,7 +27,7 @@ export const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-24 bg-slate-50 relative overflow-hidden">
+    <section id="how-it-works" className="py-24 bg-slate-50/90 backdrop-blur-sm relative overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         
         {/* Header */}
@@ -47,7 +47,23 @@ export const HowItWorks = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto relative">
           
           {/* Connector Line for Desktop */}
-          <div className="hidden md:block absolute top-16 left-[15%] right-[15%] h-1 bg-gradient-to-r from-blue-200 via-blue-400 to-indigo-400 -z-10 rounded-full" />
+          <div className="hidden md:block absolute top-16 left-[15%] right-[15%] h-2.5 bg-slate-200 -z-10 rounded-full overflow-hidden shadow-inner">
+            {/* Colored fill that "draws" itself in as the section scrolls into view */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.4, ease: 'easeInOut', delay: 0.2 }}
+              style={{ transformOrigin: 'left' }}
+              className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
+            />
+            {/* Continuous shimmer sweeping along the line */}
+            <motion.div
+              animate={{ x: ['-30%', '130%'] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: 'linear', delay: 1.6 }}
+              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/80 to-transparent rounded-full"
+            />
+          </div>
 
           {steps.map((step, index) => (
             <motion.div

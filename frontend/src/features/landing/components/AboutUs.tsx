@@ -7,7 +7,7 @@ export const AboutUs = () => {
       name: 'Thanh Nam Le',
       role: 'Software Architect & Backend Lead',
       description: 'Designed the core Domain & Application layer architecture, CQRS patterns, and C# RESTful API endpoints.',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      avatar: '/public/namle.jpg',
       badge: 'Role 1: Application Architecture',
       icon: <Code2 className="h-4 w-4 text-blue-600" />,
     },
@@ -15,30 +15,30 @@ export const AboutUs = () => {
       name: 'Chanh Nguyen',
       role: 'Database & Infrastructure Engineer',
       description: 'Implemented MySQL database schema, Entity Framework Core repositories, and Docker deployment pipeline.',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      avatar: '/public/chanhnguyen.jpg',
       badge: 'Role 2: Infrastructure & Data',
       icon: <Database className="h-4 w-4 text-blue-600" />,
     },
     {
-      name: 'Minh Tran',
+      name: 'Minh Huynh',
       role: 'Integration & QA Specialist',
       description: 'Led end-to-end integration testing, automated unit tests, and security vulnerability auditing.',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      avatar: '/public/huynhminh.jpg',
       badge: 'Role 3: Quality Assurance',
       icon: <TestTube2 className="h-4 w-4 text-blue-600" />,
     },
     {
-      name: 'Thanh Pham',
+      name: 'Thanh Huynh',
       role: 'Frontend Architect & UX Designer',
       description: 'Crafted the React TypeScript dashboard UI, Tailwind design system, and responsive landing experience.',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      avatar: '/public/thanhhuynh.jpg',
       badge: 'Role 4: Frontend & UX/UI',
       icon: <Palette className="h-4 w-4 text-blue-600" />,
     },
   ];
 
   return (
-    <section id="about-us" className="py-24 bg-slate-50 border-t border-slate-200/80 relative">
+    <section id="about-us" className="py-24 bg-slate-50/75 backdrop-blur-sm border-t border-slate-200/80 relative">
       <div className="container mx-auto px-6 lg:px-12">
         
         {/* Section Header */}
