@@ -244,7 +244,7 @@ export function Login() {
                     className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-gray-50 focus:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:-translate-y-0.5 ${
                       errors.email ? 'border-red-300' : 'border-gray-200 focus:border-blue-400'
                     }`}
-                    placeholder="ban@congty.com"
+                    placeholder="name@company.com"
                     autoComplete="email"
                   />
                 </div>

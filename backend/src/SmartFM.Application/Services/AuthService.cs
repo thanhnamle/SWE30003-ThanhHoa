@@ -28,7 +28,7 @@ public class AuthService : IAuthService
         var user = users.FirstOrDefault(u => u.Email.ToLower() == request.Email.Trim().ToLower());
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            throw new BusinessRuleException("Email hoặc mật khẩu không đúng.");
+            throw new BusinessRuleException("Invalid email or password.");
 
         var token = GenerateJwtToken(user);
         return new AuthResponse(token, new UserDto(user.Id.ToString(), user.FullName, user.Email, user.Role));
@@ -37,14 +37,14 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
         if (request.Password != request.ConfirmPassword)
-            throw new BusinessRuleException("Mật khẩu xác nhận không khớp.");
+            throw new BusinessRuleException("Confirm password does not match.");
 
         if (request.Password.Length < 8)
-            throw new BusinessRuleException("Mật khẩu phải có ít nhất 8 ký tự.");
+            throw new BusinessRuleException("Password must be at least 8 characters.");
 
         var users = await _userRepository.GetAllAsync();
         if (users.Any(u => u.Email.ToLower() == request.Email.Trim().ToLower()))
-            throw new BusinessRuleException("Email này đã được đăng ký.");
+            throw new BusinessRuleException("Email is already registered.");
 
         var newUser = new AppUser
         {

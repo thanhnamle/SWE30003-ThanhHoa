@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using SmartFM.Application.DTOs.Payments;
 using SmartFM.Application.Interfaces;
 using SmartFM.Domain.Entities;
@@ -26,26 +28,19 @@ public class PaymentService : IPaymentService
     public async Task<PaymentResponseDto> ProcessPaymentAsync(Guid invoiceId, ProcessPaymentDto request)
     {
         var invoice = await _invoiceRepository.GetByIdAsync(invoiceId);
-        
-        if (invoice == null) throw new BusinessRuleException("Không tìm thấy Hóa đơn.");
 
-        // --- BUSINESS RULES VALIDATION ---
-        
-        // Cấm thanh toán nếu Hóa đơn đã thanh toán (Chống Duplicate Payment)
+        if (invoice == null) throw new BusinessRuleException("Invoice not found.");
+
         if (invoice.Status == InvoiceStatus.Paid)
         {
-            throw new BusinessRuleException("Hóa đơn này đã được thanh toán hoàn tất, không thể thanh toán lại!");
+            throw new BusinessRuleException("Invoice has already been paid.");
         }
 
-        // Kiểm tra số tiền thanh toán (Ví dụ cơ bản: phải trả đủ tiền)
         if (request.Amount < invoice.Amount)
         {
-            throw new BusinessRuleException("Số tiền thanh toán không đủ so với giá trị hóa đơn.");
+            throw new BusinessRuleException("Payment amount is insufficient for invoice.");
         }
 
-        // --- APPLY LOGIC ---
-
-        // 1. Tạo bản ghi Thanh toán (Payment)
         var payment = new Payment
         {
             Id = Guid.NewGuid(),
@@ -55,31 +50,27 @@ public class PaymentService : IPaymentService
             Status = PaymentStatus.Success,
             AttemptedAt = DateTime.UtcNow
         };
+        await _paymentRepository.AddAsync(payment);
 
-        // 2. Tạo Biên lai bất biến (Receipt)
         var receipt = new Receipt
         {
             Id = Guid.NewGuid(),
             PaymentId = payment.Id,
             SettledAmount = request.Amount,
-            TransactionReference = $"TRX-{DateTime.UtcNow.Ticks}",
-            IssuedAt = DateTime.UtcNow
+            IssuedAt = DateTime.UtcNow,
+            TransactionReference = $"REC-{Guid.NewGuid().ToString()[..8].ToUpper()}"
         };
-
-        // 3. Cập nhật trạng thái Hóa đơn
-        invoice.Status = InvoiceStatus.Paid;
-
-        // Lưu toàn bộ xuống Database
-        await _paymentRepository.AddAsync(payment);
         await _receiptRepository.AddAsync(receipt);
+
+        invoice.Status = InvoiceStatus.Paid;
         await _invoiceRepository.UpdateAsync(invoice);
 
         return new PaymentResponseDto
         {
             PaymentId = payment.Id,
             ReceiptId = receipt.Id,
-            Status = payment.Status,
-            Message = "Thanh toán thành công và Biên lai đã được xuất!"
+            Status = PaymentStatus.Success,
+            Message = "Payment successful and receipt generated!"
         };
     }
 }

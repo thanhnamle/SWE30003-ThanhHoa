@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using SmartFM.Application.DTOs.Orders;
 using SmartFM.Application.Interfaces;
 using SmartFM.Domain.Entities;
@@ -18,14 +20,12 @@ public class OrderService : IOrderService
 
     public async Task<OrderResponseDto> PlaceOrderAsync(CreateOrderDto request)
     {
-        // 1. Business Rules Validation
         if (request.CargoWeightKg <= 0 || request.CargoVolumeM3 <= 0)
         {
-            throw new BusinessRuleException("Trọng lượng và Thể tích hàng hóa phải lớn hơn 0.");
+            throw new BusinessRuleException("Cargo weight and volume must be greater than 0.");
         }
 
-        // 2. Map DTO sang Entity
-        var newOrder = new Order
+        var order = new Order
         {
             Id = Guid.NewGuid(),
             CustomerId = request.CustomerId,
@@ -33,23 +33,21 @@ public class OrderService : IOrderService
             TransportOfferingId = request.TransportOfferingId,
             CargoWeightKg = request.CargoWeightKg,
             CargoVolumeM3 = request.CargoVolumeM3,
-            SpecialHandlingNotes = request.SpecialHandlingNotes,
-            Status = OrderStatus.Pending, // Rule: Đơn hàng mới luôn ở trạng thái Pending
+            SpecialHandlingNotes = request.SpecialHandlingNotes ?? string.Empty,
+            Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
 
-        // 3. Lưu vào Database thông qua Repository
-        await _orderRepository.AddAsync(newOrder);
+        await _orderRepository.AddAsync(order);
 
-        // 4. Trả kết quả về cho API (DTO)
         return new OrderResponseDto
         {
-            Id = newOrder.Id,
-            Status = newOrder.Status,
-            CargoWeightKg = newOrder.CargoWeightKg,
-            CargoVolumeM3 = newOrder.CargoVolumeM3,
-            SpecialHandlingNotes = newOrder.SpecialHandlingNotes,
-            CreatedAt = newOrder.CreatedAt
+            Id = order.Id,
+            CargoWeightKg = order.CargoWeightKg,
+            CargoVolumeM3 = order.CargoVolumeM3,
+            SpecialHandlingNotes = order.SpecialHandlingNotes,
+            Status = order.Status,
+            CreatedAt = order.CreatedAt
         };
     }
 }
