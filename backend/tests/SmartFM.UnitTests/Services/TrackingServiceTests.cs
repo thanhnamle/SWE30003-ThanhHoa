@@ -36,10 +36,9 @@ public class TrackingServiceTests
     [Theory]
     [InlineData(ExceptionType.VehicleBreakdown, ShipmentStatus.ExceptionPending)]
     [InlineData(ExceptionType.CargoDelay, ShipmentStatus.ExceptionPending)]
-    [InlineData(ExceptionType.WrongAddress, ShipmentStatus.Preparing)] // minor shouldn't affect preparing status
+    [InlineData(ExceptionType.WrongAddress, ShipmentStatus.Preparing)]
     public async Task LogExceptionAsync_ValidData_ShouldCreateException_AndHandleStatus(ExceptionType exceptionType, ShipmentStatus expectedShipmentStatus)
     {
-        // Arrange
         var shipmentId = Guid.NewGuid();
         var shipment = new Shipment { Id = shipmentId, Status = ShipmentStatus.Preparing };
 
@@ -51,10 +50,8 @@ public class TrackingServiceTests
             Description = "Encountered a problem during transit"
         };
 
-        // Act
         await _trackingService.LogExceptionAsync(shipmentId, dto);
 
-        // Assert
         _exceptionRepoMock.Verify(r => r.AddAsync(It.Is<DeliveryException>(e => 
             e.ShipmentId == shipmentId && 
             e.Type == exceptionType && 
@@ -69,14 +66,12 @@ public class TrackingServiceTests
     [Fact]
     public async Task LogExceptionAsync_ShipmentNotFound_ShouldThrow_BusinessRuleException()
     {
-        // Arrange
         var shipmentId = Guid.NewGuid();
         _shipmentRepoMock.Setup(r => r.GetByIdAsync(shipmentId)).ReturnsAsync((Shipment?)null);
 
         var dto = new LogExceptionDto { Type = ExceptionType.VehicleBreakdown, Description = "Breakdown" };
 
-        // Act & Assert
         var act = () => _trackingService.LogExceptionAsync(shipmentId, dto);
-        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("Không tìm thấy Chuyến hàng.");
+        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("Shipment not found.");
     }
 }

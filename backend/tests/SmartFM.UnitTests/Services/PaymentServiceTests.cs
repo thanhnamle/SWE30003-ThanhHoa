@@ -36,10 +36,12 @@ public class PaymentServiceTests
         );
     }
 
-    [Fact]
-    public async Task ProcessPaymentAsync_ValidData_ShouldSucceed_AndGenerateReceipt()
+    [Theory]
+    [InlineData(PaymentMethod.CreditCard)]
+    [InlineData(PaymentMethod.BankTransfer)]
+    [InlineData(PaymentMethod.EWallet)]
+    public async Task ProcessPaymentAsync_AllPaymentMethods_ShouldSucceed_AndGenerateReceipt(PaymentMethod method)
     {
-        // Arrange
         var invoiceId = Guid.NewGuid();
         var invoice = new Invoice { Id = invoiceId, Amount = 1200m, Status = InvoiceStatus.Unpaid };
 
@@ -48,18 +50,16 @@ public class PaymentServiceTests
         var dto = new ProcessPaymentDto
         {
             Amount = 1200m,
-            Method = PaymentMethod.CreditCard
+            Method = method
         };
 
-        // Act
         var result = await _paymentService.ProcessPaymentAsync(invoiceId, dto);
 
-        // Assert
         result.Should().NotBeNull();
         result.Status.Should().Be(PaymentStatus.Success);
-        result.Message.Should().Be("Thanh toán thành công và Biên lai đã được xuất!");
+        result.Message.Should().Be("Payment successful and receipt generated!");
 
-        _paymentRepoMock.Verify(r => r.AddAsync(It.Is<Payment>(p => p.Amount == 1200m && p.Status == PaymentStatus.Success)), Times.Once);
+        _paymentRepoMock.Verify(r => r.AddAsync(It.Is<Payment>(p => p.Amount == 1200m && p.Method == method && p.Status == PaymentStatus.Success)), Times.Once);
         _receiptRepoMock.Verify(r => r.AddAsync(It.Is<Receipt>(rc => rc.SettledAmount == 1200m)), Times.Once);
         _invoiceRepoMock.Verify(r => r.UpdateAsync(It.Is<Invoice>(i => i.Status == InvoiceStatus.Paid)), Times.Once);
     }
@@ -67,21 +67,18 @@ public class PaymentServiceTests
     [Fact]
     public async Task ProcessPaymentAsync_InvoiceNotFound_ShouldThrow_BusinessRuleException()
     {
-        // Arrange
         var invoiceId = Guid.NewGuid();
         _invoiceRepoMock.Setup(r => r.GetByIdAsync(invoiceId)).ReturnsAsync((Invoice?)null);
 
         var dto = new ProcessPaymentDto { Amount = 500m };
 
-        // Act & Assert
         var act = () => _paymentService.ProcessPaymentAsync(invoiceId, dto);
-        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("Không tìm thấy Hóa đơn.");
+        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("Invoice not found.");
     }
 
     [Fact]
     public async Task ProcessPaymentAsync_AlreadyPaidInvoice_ShouldThrow_BusinessRuleException()
     {
-        // Arrange
         var invoiceId = Guid.NewGuid();
         var invoice = new Invoice { Id = invoiceId, Amount = 1200m, Status = InvoiceStatus.Paid };
 
@@ -89,26 +86,40 @@ public class PaymentServiceTests
 
         var dto = new ProcessPaymentDto { Amount = 1200m };
 
-        // Act & Assert
         var act = () => _paymentService.ProcessPaymentAsync(invoiceId, dto);
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage("Hóa đơn này đã được thanh toán hoàn tất, không thể thanh toán lại!");
+            .WithMessage("Invoice has already been paid.");
     }
 
     [Fact]
     public async Task ProcessPaymentAsync_InsufficientAmount_ShouldThrow_BusinessRuleException()
     {
-        // Arrange
         var invoiceId = Guid.NewGuid();
         var invoice = new Invoice { Id = invoiceId, Amount = 1200m, Status = InvoiceStatus.Unpaid };
 
         _invoiceRepoMock.Setup(r => r.GetByIdAsync(invoiceId)).ReturnsAsync(invoice);
 
-        var dto = new ProcessPaymentDto { Amount = 1199.99m }; // Just under the amount
+        var dto = new ProcessPaymentDto { Amount = 1199.99m };
 
-        // Act & Assert
         var act = () => _paymentService.ProcessPaymentAsync(invoiceId, dto);
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage("Số tiền thanh toán không đủ so với giá trị hóa đơn.");
+            .WithMessage("Payment amount is insufficient for invoice.");
+    }
+
+    [Fact]
+    public async Task ProcessPaymentAsync_Overpayment_ShouldSucceed()
+    {
+        var invoiceId = Guid.NewGuid();
+        var invoice = new Invoice { Id = invoiceId, Amount = 1000m, Status = InvoiceStatus.Unpaid };
+
+        _invoiceRepoMock.Setup(r => r.GetByIdAsync(invoiceId)).ReturnsAsync(invoice);
+
+        var dto = new ProcessPaymentDto { Amount = 1500m, Method = PaymentMethod.BankTransfer };
+
+        var result = await _paymentService.ProcessPaymentAsync(invoiceId, dto);
+
+        result.Should().NotBeNull();
+        result.Status.Should().Be(PaymentStatus.Success);
+        _invoiceRepoMock.Verify(r => r.UpdateAsync(It.Is<Invoice>(i => i.Status == InvoiceStatus.Paid)), Times.Once);
     }
 }

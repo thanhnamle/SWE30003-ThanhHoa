@@ -29,7 +29,6 @@ public class OrderServiceTests
     [Fact]
     public async Task PlaceOrderAsync_ValidRequest_ShouldCreateOrder_WithPendingStatus()
     {
-        // Arrange
         var request = new CreateOrderDto
         {
             CustomerId = Guid.NewGuid(),
@@ -45,10 +44,8 @@ public class OrderServiceTests
             .Callback<Order>(o => savedOrder = o)
             .ReturnsAsync((Order o) => o);
 
-        // Act
         var result = await _orderService.PlaceOrderAsync(request);
 
-        // Assert
         result.Should().NotBeNull();
         result.Status.Should().Be(OrderStatus.Pending);
         result.CargoWeightKg.Should().Be(500.5m);
@@ -66,7 +63,6 @@ public class OrderServiceTests
     [InlineData(-10.5)]
     public async Task PlaceOrderAsync_InvalidWeight_ShouldThrow_BusinessRuleException(decimal invalidWeight)
     {
-        // Arrange
         var request = new CreateOrderDto
         {
             CustomerId = Guid.NewGuid(),
@@ -76,10 +72,9 @@ public class OrderServiceTests
             CargoVolumeM3 = 4.2m
         };
 
-        // Act & Assert
         var act = () => _orderService.PlaceOrderAsync(request);
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage("Trọng lượng và Thể tích hàng hóa phải lớn hơn 0.");
+            .WithMessage("Cargo weight and volume must be greater than 0.");
 
         _orderRepoMock.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
     }
@@ -89,7 +84,6 @@ public class OrderServiceTests
     [InlineData(-2.0)]
     public async Task PlaceOrderAsync_InvalidVolume_ShouldThrow_BusinessRuleException(decimal invalidVolume)
     {
-        // Arrange
         var request = new CreateOrderDto
         {
             CustomerId = Guid.NewGuid(),
@@ -99,11 +93,74 @@ public class OrderServiceTests
             CargoVolumeM3 = invalidVolume
         };
 
-        // Act & Assert
         var act = () => _orderService.PlaceOrderAsync(request);
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage("Trọng lượng và Thể tích hàng hóa phải lớn hơn 0.");
+            .WithMessage("Cargo weight and volume must be greater than 0.");
 
         _orderRepoMock.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_BothWeightAndVolumeNegative_ShouldThrow_BusinessRuleException()
+    {
+        var request = new CreateOrderDto
+        {
+            CustomerId = Guid.NewGuid(),
+            BranchId = Guid.NewGuid(),
+            TransportOfferingId = Guid.NewGuid(),
+            CargoWeightKg = -100m,
+            CargoVolumeM3 = -5m
+        };
+
+        var act = () => _orderService.PlaceOrderAsync(request);
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .WithMessage("Cargo weight and volume must be greater than 0.");
+
+        _orderRepoMock.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_BoundaryValues_ShouldSucceed()
+    {
+        var request = new CreateOrderDto
+        {
+            CustomerId = Guid.NewGuid(),
+            BranchId = Guid.NewGuid(),
+            TransportOfferingId = Guid.NewGuid(),
+            CargoWeightKg = 0.01m,
+            CargoVolumeM3 = 0.01m
+        };
+
+        _orderRepoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync((Order o) => o);
+
+        var result = await _orderService.PlaceOrderAsync(request);
+
+        result.Should().NotBeNull();
+        result.CargoWeightKg.Should().Be(0.01m);
+        result.CargoVolumeM3.Should().Be(0.01m);
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_NullSpecialHandlingNotes_ShouldDefaultToEmptyString()
+    {
+        var request = new CreateOrderDto
+        {
+            CustomerId = Guid.NewGuid(),
+            BranchId = Guid.NewGuid(),
+            TransportOfferingId = Guid.NewGuid(),
+            CargoWeightKg = 100m,
+            CargoVolumeM3 = 2m,
+            SpecialHandlingNotes = null!
+        };
+
+        Order? savedOrder = null;
+        _orderRepoMock.Setup(r => r.AddAsync(It.IsAny<Order>()))
+            .Callback<Order>(o => savedOrder = o)
+            .ReturnsAsync((Order o) => o);
+
+        await _orderService.PlaceOrderAsync(request);
+
+        savedOrder.Should().NotBeNull();
+        savedOrder!.SpecialHandlingNotes.Should().BeEmpty();
     }
 }
