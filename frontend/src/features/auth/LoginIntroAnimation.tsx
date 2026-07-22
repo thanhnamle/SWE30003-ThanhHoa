@@ -132,8 +132,10 @@ export function LoginIntroAnimation({ onFinish }: { onFinish: () => void }) {
         .sfm2-ring { animation: sfm2-ring 1.3s ease-out infinite; }
         .sfm2-shell-out { animation: sfm2-fade-out 0.5s ease-in forwards; }
         .sfm2-confetti-piece { animation: sfm2-confetti 0.9s cubic-bezier(.16,.84,.44,1) both; }
+        .sfm2-bar-fill { transition: width 550ms cubic-bezier(0.34, 1.56, 0.64, 1); }
         @media (prefers-reduced-motion: reduce) {
           .sfm2-bg-dots, .sfm2-path, .sfm2-pin, .sfm2-orb, .sfm2-stage, .sfm2-check, .sfm2-ring, .sfm2-confetti-piece { animation: none !important; }
+          .sfm2-bar-fill { transition: width 200ms linear; }
         }
       `}</style>
 
@@ -239,11 +241,11 @@ export function LoginIntroAnimation({ onFinish }: { onFinish: () => void }) {
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-64 h-1 rounded-full bg-white/10 overflow-hidden">
+        {/* Progress bar — advances in a little nudge each time a new stage label appears */}
+        <div className="w-64 h-1.5 rounded-full bg-white/10 overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-blue-400 to-indigo-300"
-            style={{ width: `${progress * 100}%`, transition: 'width 80ms linear' }}
+            className="h-full rounded-full bg-gradient-to-r from-blue-400 to-indigo-300 sfm2-bar-fill"
+            style={{ width: `${((stageIndex + 1) / STAGES.length) * 100}%` }}
           />
         </div>
 
