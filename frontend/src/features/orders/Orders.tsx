@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +17,16 @@ const orderSchema = z.object({
 
 type OrderFormValues = z.infer<typeof orderSchema>;
 
+const getServiceDescription = (category: string) => {
+  switch (category.toLowerCase()) {
+    case 'express': return 'Priority routing with guaranteed fast delivery times.';
+    case 'fragile': return 'Specialized handling for delicate or high-value cargo.';
+    case 'standard': return 'Cost-effective reliable transport for regular goods.';
+    case 'bulk': return 'Dedicated heavy-duty fleet for massive volume transport.';
+    default: return 'Reliable transport for your cargo needs.';
+  }
+};
+
 export function Orders() {
   const [selectedOffering, setSelectedOffering] = useState<TransportOffering | null>(null);
 
@@ -32,10 +42,11 @@ export function Orders() {
     queryFn: orderApi.getCustomers
   });
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<OrderFormValues>({
+  const queryClient = useQueryClient();
+  const { register, handleSubmit, setValue, setError, formState: { errors } } = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
-      branchId: '00000000-0000-0000-0000-000000000001', // Seeded Branch
+      branchId: '11111111-1111-1111-1111-111111111111', // Seeded Branch
     }
   });
 
@@ -43,10 +54,19 @@ export function Orders() {
     mutationFn: orderApi.createOrder,
     onSuccess: () => {
       setSelectedOffering(null);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 
   const onSubmit = (data: OrderFormValues) => {
+    if (selectedOffering && data.cargoWeightKg > selectedOffering.maxCapacityKg) {
+      setError('cargoWeightKg', {
+        type: 'manual',
+        message: `Exceeds the ${selectedOffering.category} capacity limit of ${selectedOffering.maxCapacityKg.toLocaleString()}kg`
+      });
+      return;
+    }
+
     orderMutation.mutate({
       ...data,
       specialHandlingNotes: data.specialHandlingNotes ?? '',
@@ -56,9 +76,6 @@ export function Orders() {
   const handleSelectOffering = (offering: TransportOffering) => {
     setSelectedOffering(offering);
     setValue('transportOfferingId', offering.id);
-    if (customers && customers.length > 0) {
-      setValue('customerId', customers[0].id); // Auto-bind to mock session customer
-    }
   };
 
   return (
@@ -156,6 +173,9 @@ export function Orders() {
                       {offering.category}
                     </h3>
                     <p className="text-sm text-gray-500 mt-2 font-medium">Up to {offering.maxCapacityKg.toLocaleString()} kg capacity</p>
+                    <p className="text-xs text-gray-400 mt-2 leading-relaxed line-clamp-2">
+                      {getServiceDescription(offering.category)}
+                    </p>
                     
                     <div className="mt-6 pt-5 border-t border-gray-100 flex items-end justify-between">
                       <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Base Rate</span>
@@ -195,6 +215,31 @@ export function Orders() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3 group/input md:col-span-2">
+                <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Customer</label>
+                <div className="relative">
+                  <select 
+                    {...register('customerId')}
+                    className={`w-full px-5 py-4 rounded-2xl border-2 bg-gray-50/50 hover:bg-white focus:bg-white transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 appearance-none ${
+                      errors.customerId 
+                        ? 'border-red-300 focus:border-red-500 text-red-900' 
+                        : 'border-gray-100 focus:border-blue-500 text-gray-900'
+                    }`}
+                  >
+                    <option value="">Select a customer...</option>
+                    {customers?.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name || c.fullName || c.companyName || 'Unknown Customer'} {c.email ? `(${c.email})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none">
+                    <ChevronRight className={`w-5 h-5 rotate-90 transition-colors duration-300 ${errors.customerId ? 'text-red-400' : 'text-gray-400'}`} />
+                  </div>
+                </div>
+                {errors.customerId && <p className="text-red-500 text-sm font-semibold animate-pulse">{errors.customerId.message}</p>}
+              </div>
+
               <div className="space-y-3 group/input">
                 <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Total Weight (kg)</label>
                 <div className="relative">

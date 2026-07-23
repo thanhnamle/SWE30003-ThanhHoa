@@ -26,17 +26,29 @@ export interface Shipment {
   orderId: string;
   status: ShipmentStatus;
   createdAt: string;
-  pickupDeliveryOption?: {
-    pickupAddress: string;
-    deliveryAddress: string;
-  };
   vehicleAssignment?: {
     vehicleId: string;
     vehiclePlate: string;
+    vehicleType?: string;
   };
   driverAssignment?: {
     driverId: string;
     driverName: string;
+  };
+  order?: {
+    cargoWeightKg: number;
+    cargoVolumeM3: number;
+    specialHandlingNotes: string;
+    customerName: string;
+    serviceCategory: string;
+  };
+  pickupDeliveryOption?: {
+    pickupAddress: string;
+    pickupWindowStart: string;
+    pickupWindowEnd: string;
+    deliveryAddress: string;
+    deliveryWindowStart: string;
+    deliveryWindowEnd: string;
   };
 }
 
@@ -85,5 +97,14 @@ export const shipmentApi = {
   createVehicle: async (vehicle: Omit<Vehicle, 'id'>): Promise<Vehicle> => {
     const response = await apiClient.post<Vehicle>('/api/vehicles', vehicle);
     return response.data;
+  },
+
+  updateShipmentStatus: async (id: string, status: ShipmentStatus): Promise<Shipment> => {
+    const response = await apiClient.put<Shipment>(`/api/shipments/${id}/status`, { status });
+    return response.data;
+  },
+
+  deleteShipment: async (id: string): Promise<void> => {
+    await apiClient.delete(`/api/shipments/${id}`);
   },
 };

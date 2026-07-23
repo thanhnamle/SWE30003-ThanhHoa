@@ -26,6 +26,7 @@ public class SmartFmDbContext : DbContext
     public DbSet<TrackingRecord> TrackingRecords => Set<TrackingRecord>();
     public DbSet<DeliveryException> DeliveryExceptions => Set<DeliveryException>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
+    public DbSet<AppNotification> AppNotifications => Set<AppNotification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +35,7 @@ public class SmartFmDbContext : DbContext
 
         SeedReferenceData(modelBuilder);
         SeedUsers(modelBuilder);
+        SeedNotifications(modelBuilder);
     }
 
     private static void SeedReferenceData(ModelBuilder modelBuilder)
@@ -100,5 +102,38 @@ public class SmartFmDbContext : DbContext
             Role = "Admin",
             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         });
+    }
+
+    private static void SeedNotifications(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AppNotification>().HasData(
+            new AppNotification
+            {
+                Id = Guid.Parse("50000000-0000-0000-0000-000000000001"),
+                Title = "New Order Created",
+                Message = "Samsung Electronics placed a new freight order.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow.AddMinutes(-2),
+                Type = "Order"
+            },
+            new AppNotification
+            {
+                Id = Guid.Parse("50000000-0000-0000-0000-000000000002"),
+                Title = "Shipment Delayed",
+                Message = "SHP-9022 is delayed due to heavy traffic conditions.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow.AddHours(-1),
+                Type = "Alert"
+            },
+            new AppNotification
+            {
+                Id = Guid.Parse("50000000-0000-0000-0000-000000000003"),
+                Title = "Payment Received",
+                Message = "Invoice INV-2026-114 has been successfully paid.",
+                IsRead = true,
+                CreatedAt = DateTime.UtcNow.AddHours(-5),
+                Type = "Payment"
+            }
+        );
     }
 }

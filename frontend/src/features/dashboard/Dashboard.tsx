@@ -1,36 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { PageContainer } from "@/components/common/PageContainer";
-import { Package, Truck, DollarSign, Users, ArrowUpRight, ArrowDownRight, Plus, Boxes, Snowflake } from "lucide-react";
+import { useNavigate } from "react-router";
+import { Package, Truck, DollarSign, Users, ArrowUpRight, ArrowDownRight, Boxes, Snowflake, Plus } from "lucide-react";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   BarChart, Bar, Cell
 } from 'recharts';
 import { shipmentApi } from "../shipments/api/shipmentApi";
 import { paymentApi } from "../payments/api/paymentApi";
-import { orderApi } from "../orders/api/orderApi";
-import { Modal } from "@/components/common/Modal";
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ vehicles: 0, drivers: 0, orders: 0, revenue: 0, customers: 0 });
   const [loading, setLoading] = useState(true);
   const [barsVisible, setBarsVisible] = useState(false);
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [shipmentStatusData, setShipmentStatusData] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [offerings, setOfferings] = useState<any[]>([]);
-  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
   useEffect(() => {
     Promise.all([
       shipmentApi.getVehicles(),
       shipmentApi.getDrivers(),
       shipmentApi.getShipments(),
-      paymentApi.getInvoices(),
-      orderApi.getCustomers(),
-      orderApi.getOfferings()
-    ]).then(([vehicles, drivers, shipments, invoices, customers, offerings]) => {
+      paymentApi.getInvoices()
+    ]).then(([vehicles, drivers, shipments, invoices]) => {
       const totalRevenue = invoices.filter(i => i.status === 'Paid').reduce((sum, inv) => sum + inv.amount, 0);
       setStats({
         vehicles: vehicles.length,
@@ -76,8 +70,6 @@ export function Dashboard() {
          return { name: monthName, value: val > 0 ? val : Math.floor(Math.random() * 50) + 20 };
       });
       setRevenueData(revData);
-      setCustomers(customers);
-      setOfferings(offerings);
       setLoading(false);
     });
   }, []);
@@ -95,7 +87,7 @@ export function Dashboard() {
       description="A real-time snapshot of your fleet, shipments and revenue."
       action={
         <div className="flex items-center gap-3">
-          <button onClick={() => setIsOrderModalOpen(true)} className="sfm-cta flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-sm">
+          <button onClick={() => navigate('/dashboard/orders')} className="sfm-cta flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-sm">
             <Plus className="w-4 h-4" /> New order
           </button>
         </div>
@@ -376,86 +368,6 @@ export function Dashboard() {
           </div>
         </div>
       )}
-
-      <Modal
-        isOpen={isOrderModalOpen}
-        onClose={() => setIsOrderModalOpen(false)}
-        title="Quick Add Order"
-      >
-        <form 
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setIsSubmittingOrder(true);
-            const formData = new FormData(e.currentTarget);
-            try {
-              await orderApi.createOrder({
-                customerId: formData.get('customerId') as string,
-                transportOfferingId: formData.get('transportOfferingId') as string,
-                cargoWeightKg: Number(formData.get('cargoWeightKg')),
-                cargoVolumeM3: Number(formData.get('cargoVolumeM3')),
-                specialHandlingNotes: formData.get('specialHandlingNotes') as string,
-                branchId: '00000000-0000-0000-0000-000000000001'
-              });
-              setIsOrderModalOpen(false);
-              // optionally refetch shipments here
-            } catch (err) {
-              console.error(err);
-            } finally {
-              setIsSubmittingOrder(false);
-            }
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-            <select name="customerId" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-              <option value="">Select a customer...</option>
-              {customers.map((c: any) => (
-                <option key={c.id} value={c.id}>{c.name || c.companyName || c.fullName || c.id}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Transport Offering</label>
-            <select name="transportOfferingId" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-              <option value="">Select a transport offering...</option>
-              {offerings.map((o: any) => (
-                <option key={o.id} value={o.id}>{o.name} ({o.serviceType})</option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-              <input name="cargoWeightKg" type="number" required min="1" className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Volume (m³)</label>
-              <input name="cargoVolumeM3" type="number" step="0.1" required min="0.1" className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Special Notes</label>
-            <textarea name="specialHandlingNotes" rows={2} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"></textarea>
-          </div>
-          <div className="pt-4 border-t border-gray-100 flex justify-end gap-3 mt-6">
-            <button 
-              type="button" 
-              onClick={() => setIsOrderModalOpen(false)}
-              className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              disabled={isSubmittingOrder}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-            >
-              {isSubmittingOrder ? 'Saving...' : 'Create Order'}
-            </button>
-          </div>
-        </form>
-      </Modal>
     </PageContainer>
   );
 }

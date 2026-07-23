@@ -14,6 +14,8 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ITrackingService, TrackingService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<ISearchService, SearchService>();
 
         return services;
     }

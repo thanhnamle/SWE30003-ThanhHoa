@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SmartFM.Application.DTOs.Tracking;
 using SmartFM.Application.Interfaces;
 using SmartFM.Domain.Entities;
 using SmartFM.Domain.Interfaces;
+using SmartFM.Infrastructure.Persistence;
 
 namespace SmartFM.API.Controllers;
 
@@ -12,34 +14,50 @@ public class TrackingController : ControllerBase
 {
     private readonly ITrackingService _trackingService;
     private readonly IRepository<TrackingRecord> _trackingRepository;
-    private readonly IRepository<Shipment> _shipmentRepository;
+    private readonly SmartFmDbContext _dbContext;
 
     public TrackingController(
         ITrackingService trackingService,
         IRepository<TrackingRecord> trackingRepository,
-        IRepository<Shipment> shipmentRepository)
+        SmartFmDbContext dbContext)
     {
         _trackingService = trackingService;
         _trackingRepository = trackingRepository;
-        _shipmentRepository = shipmentRepository;
+        _dbContext = dbContext;
     }
 
     /// <summary>GET /api/tracking/shipments – get all shipments for driver view</summary>
     [HttpGet("shipments")]
     public async Task<IActionResult> GetShipments()
     {
-        var shipments = await _shipmentRepository.GetAllAsync();
-        var result = shipments
+        var shipments = await _dbContext.Set<Shipment>()
+            .Include(s => s.PickupDeliveryOption)
+            .Include(s => s.Order).ThenInclude(o => o.Customer)
             .Where(s => s.Status == Domain.Enums.ShipmentStatus.ReadyForPickup
                      || s.Status == Domain.Enums.ShipmentStatus.InTransit
                      || s.Status == Domain.Enums.ShipmentStatus.Delivered)
-            .Select(s => new
+            .ToListAsync();
+
+        var result = shipments.Select(s => new
+        {
+            s.Id,
+            s.OrderId,
+            Status = s.Status.ToString(),
+            s.CreatedAt,
+            PickupDeliveryOption = s.PickupDeliveryOption != null ? new
             {
-                s.Id,
-                s.OrderId,
-                Status = s.Status.ToString(),
-                s.CreatedAt
-            });
+                s.PickupDeliveryOption.PickupAddress,
+                s.PickupDeliveryOption.PickupWindowStart,
+                s.PickupDeliveryOption.PickupWindowEnd,
+                s.PickupDeliveryOption.DeliveryAddress,
+                s.PickupDeliveryOption.DeliveryWindowStart,
+                s.PickupDeliveryOption.DeliveryWindowEnd
+            } : null,
+            Order = s.Order != null ? new
+            {
+                CustomerName = s.Order.Customer?.Name ?? string.Empty
+            } : null
+        });
         return Ok(result);
     }
 
