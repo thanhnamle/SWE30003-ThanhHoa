@@ -23,14 +23,25 @@ public class GlobalExceptionMiddleware
         {
             _logger.LogError(ex, "An unhandled exception occurred.");
 
+            var statusCode = StatusCodes.Status500InternalServerError;
+            var title = "Server Error";
+            var detail = "An unexpected error occurred.";
+
+            if (ex is SmartFM.Domain.Exceptions.BusinessRuleException)
+            {
+                statusCode = StatusCodes.Status400BadRequest;
+                title = "Business Rule Violation";
+                detail = ex.Message;
+            }
+
             var problemDetails = new ProblemDetails
             {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "Server Error",
-                Detail = "An unexpected error occurred."
+                Status = statusCode,
+                Title = title,
+                Detail = detail
             };
 
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/problem+json";
 
             await context.Response.WriteAsJsonAsync(problemDetails);
