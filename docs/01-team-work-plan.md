@@ -1,14 +1,16 @@
+oôito
+
 # Shared Team Work Plan
 
 ## Role-based allocation
 
 The work is divided by role rather than by member name. The group decides who takes each role.
 
-| Role | Main ownership |
-|---|---|
-| Domain and Application Logic | entities, business rules, use cases, validation rules |
-| API, Persistence, and Integration | controllers, DTO contracts, database, migrations, service registration, final backend integration |
-| Frontend and User Experience | pages, forms, client validation, API calls, navigation, user feedback |
+| Role                                 | Main ownership                                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Domain and Application Logic         | entities, business rules, use cases, validation rules                                                |
+| API, Persistence, and Integration    | controllers, DTO contracts, database, migrations, service registration, final backend integration    |
+| Frontend and User Experience         | pages, forms, client validation, API calls, navigation, user feedback                                |
 | Testing, Evidence, and Documentation | unit/integration test coordination, execution evidence, design-change documentation, report assembly |
 
 ## Important rule

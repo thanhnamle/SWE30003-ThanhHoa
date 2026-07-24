@@ -7,9 +7,18 @@ import { Modal } from "@/components/common/Modal";
 import { Driver, shipmentApi } from "../shipments/api/shipmentApi";
 import { User, IdCard, Clock, Fingerprint, UserPlus, Loader2 } from "lucide-react";
 
+const LICENSE_CLASSES = [
+  { code: 'B2', label: 'Class B2', desc: 'Light Trucks & Vans (up to 3.5T)' },
+  { code: 'C', label: 'Class C', desc: 'Heavy Freight Trucks (> 3.5T)' },
+  { code: 'D', label: 'Class D', desc: 'Commercial Passenger Vehicles' },
+  { code: 'E', label: 'Class E', desc: 'Trailers & Articulated Trucks' },
+  { code: 'FC', label: 'Class FC', desc: 'Heavy Container Trucks' },
+];
+
 const driverSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
-  licenseNumber: z.string().min(1, 'License number is required'),
+  licenseClass: z.string().min(1, 'Please select a license class'),
+  licenseCode: z.string().min(1, 'License ID / Code is required'),
   branchId: z.string(),
 });
 
@@ -21,12 +30,15 @@ export function Drivers() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<DriverFormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<DriverFormValues>({
     resolver: zodResolver(driverSchema),
     defaultValues: {
+      licenseClass: 'B2',
       branchId: '11111111-1111-1111-1111-111111111111'
     }
   });
+
+  const selectedClass = watch('licenseClass');
 
   useEffect(() => {
     fetchDrivers();
@@ -43,12 +55,20 @@ export function Drivers() {
   const onSubmit = async (data: DriverFormValues) => {
     setIsSubmitting(true);
     try {
+      const combinedLicense = `${data.licenseClass}-${data.licenseCode.trim()}`;
       await shipmentApi.createDriver({
-        ...data,
+        fullName: data.fullName,
+        licenseNumber: combinedLicense,
+        branchId: data.branchId,
         isOnLeave: false
       });
       setIsModalOpen(false);
-      reset();
+      reset({
+        fullName: '',
+        licenseClass: 'B2',
+        licenseCode: '',
+        branchId: '11111111-1111-1111-1111-111111111111'
+      });
       fetchDrivers();
     } catch (error) {
       console.error("Failed to create driver:", error);
@@ -181,7 +201,7 @@ export function Drivers() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
             <input 
               {...register('fullName')} 
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -190,14 +210,36 @@ export function Drivers() {
             {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
-            <input 
-              {...register('licenseNumber')} 
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              placeholder="e.g. B2-123456"
-            />
-            {errors.licenseNumber && <p className="text-red-500 text-xs mt-1">{errors.licenseNumber.message}</p>}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">License Class <span className="text-red-500">*</span></label>
+              <select 
+                {...register('licenseClass')}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white cursor-pointer"
+              >
+                {LICENSE_CLASSES.map((lc) => (
+                  <option key={lc.code} value={lc.code}>
+                    {lc.code} - {lc.label} ({lc.desc})
+                  </option>
+                ))}
+              </select>
+              {errors.licenseClass && <p className="text-red-500 text-xs mt-1">{errors.licenseClass.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">License ID / Number <span className="text-red-500">*</span></label>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg font-mono font-bold text-sm text-blue-600 shrink-0">
+                  {selectedClass || 'B2'}-
+                </span>
+                <input 
+                  {...register('licenseCode')} 
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
+                  placeholder="e.g. 99887766"
+                />
+              </div>
+              {errors.licenseCode && <p className="text-red-500 text-xs mt-1">{errors.licenseCode.message}</p>}
+            </div>
           </div>
 
           <div className="pt-4 border-t border-gray-100 flex justify-end gap-3 mt-6">

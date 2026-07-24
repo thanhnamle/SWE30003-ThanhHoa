@@ -31,10 +31,15 @@ function initialsFor(name: string) {
 }
 
 const customerSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'Contact name is required'),
   companyName: z.string().min(1, 'Company name is required'),
-  email: z.string().email('Invalid email format'),
-  phone: z.string().min(1, 'Phone is required'),
+  email: z.string().min(1, 'Email is required').email('Invalid email format'),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .refine((val) => {
+      const digits = val.replace(/\D/g, '');
+      return digits.length >= 10 && digits.length <= 11;
+    }, { message: 'Phone number must contain 10 or 11 digits (e.g. 0912345678)' }),
   isCorporateAccount: z.boolean(),
 });
 
@@ -261,7 +266,7 @@ export function Customers() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name <span className="text-red-500">*</span></label>
             <input 
               {...register('name')} 
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -271,7 +276,7 @@ export function Customers() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name <span className="text-red-500">*</span></label>
             <input 
               {...register('companyName')} 
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -282,7 +287,7 @@ export function Customers() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
               <input 
                 {...register('email')} 
                 type="email"
@@ -293,11 +298,11 @@ export function Customers() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number <span className="text-red-500">*</span></label>
               <input 
                 {...register('phone')} 
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                placeholder="+1 234 567 890"
+                placeholder="e.g. 0912345678 (10-11 digits)"
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
             </div>
