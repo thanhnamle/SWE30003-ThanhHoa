@@ -113,7 +113,7 @@ public class SmartFmDbContext : DbContext
                 Title = "New Order Created",
                 Message = "Samsung Electronics placed a new freight order.",
                 IsRead = false,
-                CreatedAt = DateTime.UtcNow.AddMinutes(-2),
+                CreatedAt = new DateTime(2026, 7, 23, 3, 29, 48, DateTimeKind.Utc),
                 Type = "Order"
             },
             new AppNotification
@@ -122,7 +122,7 @@ public class SmartFmDbContext : DbContext
                 Title = "Shipment Delayed",
                 Message = "SHP-9022 is delayed due to heavy traffic conditions.",
                 IsRead = false,
-                CreatedAt = DateTime.UtcNow.AddHours(-1),
+                CreatedAt = new DateTime(2026, 7, 23, 2, 31, 48, DateTimeKind.Utc),
                 Type = "Alert"
             },
             new AppNotification
@@ -131,7 +131,7 @@ public class SmartFmDbContext : DbContext
                 Title = "Payment Received",
                 Message = "Invoice INV-2026-114 has been successfully paid.",
                 IsRead = true,
-                CreatedAt = DateTime.UtcNow.AddHours(-5),
+                CreatedAt = new DateTime(2026, 7, 22, 22, 31, 48, DateTimeKind.Utc),
                 Type = "Payment"
             }
         );

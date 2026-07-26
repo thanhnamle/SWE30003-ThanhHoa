@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartFM.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SmartFM.Infrastructure.Persistence;
 namespace SmartFM.Infrastructure.Migrations
 {
     [DbContext(typeof(SmartFmDbContext))]
-    partial class SmartFmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726160815_DiagnosePendingChanges")]
+    partial class DiagnosePendingChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,7 +57,7 @@ namespace SmartFM.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("50000000-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2026, 7, 23, 3, 29, 48, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 26, 16, 6, 12, 112, DateTimeKind.Utc).AddTicks(10),
                             IsRead = false,
                             Message = "Samsung Electronics placed a new freight order.",
                             Title = "New Order Created",
@@ -63,7 +66,7 @@ namespace SmartFM.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("50000000-0000-0000-0000-000000000002"),
-                            CreatedAt = new DateTime(2026, 7, 23, 2, 31, 48, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 26, 15, 8, 12, 112, DateTimeKind.Utc).AddTicks(293),
                             IsRead = false,
                             Message = "SHP-9022 is delayed due to heavy traffic conditions.",
                             Title = "Shipment Delayed",
@@ -72,7 +75,7 @@ namespace SmartFM.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("50000000-0000-0000-0000-000000000003"),
-                            CreatedAt = new DateTime(2026, 7, 22, 22, 31, 48, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 26, 11, 8, 12, 112, DateTimeKind.Utc).AddTicks(304),
                             IsRead = true,
                             Message = "Invoice INV-2026-114 has been successfully paid.",
                             Title = "Payment Received",
