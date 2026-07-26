@@ -17,6 +17,11 @@ namespace SmartFM.IntegrationTests;
 public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
 
     public PaymentApiTests(CustomWebApplicationFactory<Program> factory)
     {
@@ -37,7 +42,7 @@ public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program
 
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"Response content: {content}");
 
-        var result = await response.Content.ReadFromJsonAsync<PaymentResponseDto>();
+        var result = await response.Content.ReadFromJsonAsync<PaymentResponseDto>(JsonOptions);
         result.Should().NotBeNull();
         result!.Status.Should().Be(PaymentStatus.Success);
         result.Message.Should().Be("Payment successful and receipt generated!");

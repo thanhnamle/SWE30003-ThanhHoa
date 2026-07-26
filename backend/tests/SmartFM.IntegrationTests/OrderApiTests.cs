@@ -17,6 +17,11 @@ namespace SmartFM.IntegrationTests;
 public class OrderApiTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
 
     public OrderApiTests(CustomWebApplicationFactory<Program> factory)
     {
@@ -43,7 +48,7 @@ public class OrderApiTests : IClassFixture<CustomWebApplicationFactory<Program>>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         
-        var order = await response.Content.ReadFromJsonAsync<OrderResponseDto>();
+        var order = await response.Content.ReadFromJsonAsync<OrderResponseDto>(JsonOptions);
         order.Should().NotBeNull();
         order!.Id.Should().NotBeEmpty();
         order.Status.Should().Be(OrderStatus.Pending);

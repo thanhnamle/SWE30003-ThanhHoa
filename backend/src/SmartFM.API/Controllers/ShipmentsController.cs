@@ -27,10 +27,10 @@ public class ShipmentsController : ControllerBase
     public async Task<IActionResult> GetShipments()
     {
         var shipments = await _dbContext.Set<Shipment>()
-            .Include(s => s.VehicleAssignment).ThenInclude(v => v.Vehicle)
-            .Include(s => s.DriverAssignment).ThenInclude(d => d.Driver)
-            .Include(s => s.Order).ThenInclude(o => o.Customer)
-            .Include(s => s.Order).ThenInclude(o => o.TransportOffering)
+            .Include(s => s.VehicleAssignment!).ThenInclude(v => v.Vehicle)
+            .Include(s => s.DriverAssignment!).ThenInclude(d => d.Driver)
+            .Include(s => s.Order!).ThenInclude(o => o.Customer)
+            .Include(s => s.Order!).ThenInclude(o => o.TransportOffering)
             .Include(s => s.PickupDeliveryOption)
             .ToListAsync();
 
@@ -78,10 +78,10 @@ public class ShipmentsController : ControllerBase
     public async Task<IActionResult> GetShipment(Guid id)
     {
         var shipment = await _dbContext.Set<Shipment>()
-            .Include(s => s.VehicleAssignment).ThenInclude(v => v.Vehicle)
-            .Include(s => s.DriverAssignment).ThenInclude(d => d.Driver)
-            .Include(s => s.Order).ThenInclude(o => o.Customer)
-            .Include(s => s.Order).ThenInclude(o => o.TransportOffering)
+            .Include(s => s.VehicleAssignment!).ThenInclude(v => v.Vehicle)
+            .Include(s => s.DriverAssignment!).ThenInclude(d => d.Driver)
+            .Include(s => s.Order!).ThenInclude(o => o.Customer)
+            .Include(s => s.Order!).ThenInclude(o => o.TransportOffering)
             .Include(s => s.PickupDeliveryOption)
             .FirstOrDefaultAsync(s => s.Id == id);
             

@@ -45,8 +45,8 @@ namespace SmartFM.Application.Services
                 {
                     Id = c.Id,
                     Type = "Customer",
-                    Title = c.Name,
-                    Subtitle = c.CompanyName,
+                    Title = c.Name ?? c.CompanyName ?? "Unnamed Customer",
+                    Subtitle = c.CompanyName ?? string.Empty,
                     Url = "/customers"
                 });
             }

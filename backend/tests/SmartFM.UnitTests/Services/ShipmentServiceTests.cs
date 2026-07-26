@@ -23,6 +23,7 @@ public class ShipmentServiceTests
     private readonly Mock<IRepository<Driver>> _driverRepoMock;
     private readonly Mock<IRepository<VehicleAssignment>> _vehicleAssignRepoMock;
     private readonly Mock<IRepository<DriverAssignment>> _driverAssignRepoMock;
+    private readonly Mock<IRepository<PickupDeliveryOption>> _pickupDeliveryOptionRepoMock;
     private readonly ShipmentService _shipmentService;
 
     public ShipmentServiceTests()
@@ -32,13 +33,15 @@ public class ShipmentServiceTests
         _driverRepoMock = new Mock<IRepository<Driver>>();
         _vehicleAssignRepoMock = new Mock<IRepository<VehicleAssignment>>();
         _driverAssignRepoMock = new Mock<IRepository<DriverAssignment>>();
+        _pickupDeliveryOptionRepoMock = new Mock<IRepository<PickupDeliveryOption>>();
 
         _shipmentService = new ShipmentService(
             _shipmentRepoMock.Object,
             _vehicleRepoMock.Object,
             _driverRepoMock.Object,
             _vehicleAssignRepoMock.Object,
-            _driverAssignRepoMock.Object
+            _driverAssignRepoMock.Object,
+            _pickupDeliveryOptionRepoMock.Object
         );
     }
 

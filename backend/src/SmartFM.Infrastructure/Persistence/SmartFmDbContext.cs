@@ -68,7 +68,7 @@ public class SmartFmDbContext : DbContext
         {
             Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
             FullName = "Nguyen Van A",
-            LicenseNumber = "B2-998877",
+            LicenseNumber = "C-998877",
             LicenseExpiryDate = new DateTime(2028, 1, 1),
             MaxWeeklyHours = 48,
             IsOnLeave = false,

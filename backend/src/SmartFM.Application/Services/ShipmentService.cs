@@ -51,7 +51,8 @@ public class ShipmentService : IShipmentService
 
         if (driver.IsOnLeave)
         {
-            throw new BusinessRuleException($"Driver {driver.FullName} ({driver.LicenseNumber}) is on leave.");
+            var driverDisplay = string.IsNullOrWhiteSpace(driver.FullName) ? driver.LicenseNumber : $"{driver.FullName} ({driver.LicenseNumber})";
+            throw new BusinessRuleException($"Driver {driverDisplay} is on leave.");
         }
 
         // Validate Driver License Class against Vehicle Type

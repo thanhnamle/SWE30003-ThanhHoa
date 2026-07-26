@@ -4,6 +4,7 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 using SmartFM.Application.DTOs.Orders;
+using SmartFM.Application.Interfaces;
 using SmartFM.Application.Services;
 using SmartFM.Domain.Entities;
 using SmartFM.Domain.Enums;
@@ -18,12 +19,20 @@ namespace SmartFM.UnitTests.Services;
 public class OrderServiceExtendedTests
 {
     private readonly Mock<IRepository<Order>> _orderRepoMock;
+    private readonly Mock<IRepository<TransportOffering>> _offeringRepoMock;
+    private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly OrderService _orderService;
 
     public OrderServiceExtendedTests()
     {
         _orderRepoMock = new Mock<IRepository<Order>>();
-        _orderService = new OrderService(_orderRepoMock.Object);
+        _offeringRepoMock = new Mock<IRepository<TransportOffering>>();
+        _notificationServiceMock = new Mock<INotificationService>();
+
+        _offeringRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new TransportOffering { BaseFee = 500000, FeePerKm = 15000, IsActive = true });
+
+        _orderService = new OrderService(_orderRepoMock.Object, _offeringRepoMock.Object, _notificationServiceMock.Object);
     }
 
     [Theory]
