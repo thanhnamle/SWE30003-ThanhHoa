@@ -43,7 +43,7 @@ export function Orders() {
   });
 
   const queryClient = useQueryClient();
-  const { register, handleSubmit, setValue, setError, formState: { errors } } = useForm<OrderFormValues>({
+  const { register, handleSubmit, setValue, setError, reset, formState: { errors } } = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
       branchId: '11111111-1111-1111-1111-111111111111', // Seeded Branch
@@ -291,27 +291,40 @@ export function Orders() {
               </div>
             </div>
 
-            <div className="mt-10 pt-8 border-t border-gray-100 flex items-center justify-between">
+            <div className="mt-10 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm font-medium text-gray-500 hidden md:block">
                 Double check your requirements before submitting.
               </p>
-              <button 
-                type="submit"
-                disabled={orderMutation.isPending || !selectedOffering}
-                className="group relative w-full md:w-auto flex justify-center items-center gap-3 px-10 py-4 bg-gray-900 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-2xl font-bold transition-all duration-300 shadow-xl shadow-gray-900/20 hover:shadow-blue-600/30 disabled:shadow-none hover:-translate-y-1 disabled:translate-y-0 disabled:cursor-not-allowed overflow-hidden"
-              >
-                {orderMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    Processing Order...
-                  </>
-                ) : (
-                  <>
-                    Confirm & Submit Order
-                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-300" />
-                  </>
-                )}
-              </button>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setSelectedOffering(null);
+                    reset();
+                  }}
+                  className="w-full sm:w-auto px-6 py-4 border-2 border-gray-200 hover:bg-gray-100 hover:border-gray-300 text-gray-700 rounded-2xl font-bold transition-all duration-300 shadow-sm text-sm"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={orderMutation.isPending || !selectedOffering}
+                  className="group relative w-full sm:w-auto flex justify-center items-center gap-3 px-10 py-4 bg-gray-900 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-2xl font-bold transition-all duration-300 shadow-xl shadow-gray-900/20 hover:shadow-blue-600/30 disabled:shadow-none hover:-translate-y-1 disabled:translate-y-0 disabled:cursor-not-allowed overflow-hidden"
+                >
+                  {orderMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      Processing Order...
+                    </>
+                  ) : (
+                    <>
+                      Confirm & Submit Order
+                      <ChevronRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-300" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         </div>
