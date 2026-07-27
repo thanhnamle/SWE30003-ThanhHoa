@@ -17,6 +17,21 @@ export const getVehicleIcon = (type?: string, className = "w-5 h-5") => {
   }
 };
 
+const getLicenseMismatchError = (driver?: { fullName: string; licenseNumber: string }, vehicle?: { type: string }): string => {
+  if (!driver || !vehicle) return '';
+  const licenseUpper = driver.licenseNumber.toUpperCase();
+  const isFCorFE = licenseUpper.includes('FC') || licenseUpper.includes('FE');
+  const isClassC = licenseUpper.includes('CLASS-C') || licenseUpper.startsWith('C-') || licenseUpper.startsWith('C') || isFCorFE;
+
+  if (vehicle.type === 'Container' && !isFCorFE) {
+    return `Driver ${driver.fullName} (${driver.licenseNumber}) cannot drive Container vehicles (Class FC/FE required).`;
+  }
+  if ((vehicle.type === 'Truck' || vehicle.type === 'Refrigerated') && (licenseUpper.startsWith('B2') || licenseUpper.includes('B2-')) && !isClassC) {
+    return `Driver ${driver.fullName} (${driver.licenseNumber}) has a B2 license, which is insufficient for ${vehicle.type} (Class C required).`;
+  }
+  return '';
+};
+
 const assignmentSchema = z.object({
   vehicleId: z.string().min(1, 'Vehicle is required'),
   driverId: z.string().min(1, 'Driver is required'),
@@ -53,9 +68,17 @@ export function Shipments() {
     queryFn: shipmentApi.getDrivers
   });
 
-  const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<AssignmentFormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, setError, watch } = useForm<AssignmentFormValues>({
     resolver: zodResolver(assignmentSchema),
   });
+
+  const watchedVehicleId = watch('vehicleId');
+  const watchedDriverId = watch('driverId');
+
+  const activeVehicle = vehicles?.find(v => v.id === watchedVehicleId);
+  const activeDriver = drivers?.find(d => d.id === watchedDriverId);
+
+  const realTimeLicenseError = getLicenseMismatchError(activeDriver, activeVehicle);
 
   const assignMutation = useMutation({
     mutationFn: shipmentApi.assignResources,
@@ -106,20 +129,11 @@ export function Shipments() {
         });
         hasError = true;
       } else if (selectedVehicle) {
-        const licenseUpper = selectedDriver.licenseNumber.toUpperCase();
-        const isFCorFE = licenseUpper.includes('FC') || licenseUpper.includes('FE');
-        const isClassC = licenseUpper.includes('CLASS-C') || licenseUpper.startsWith('C-') || licenseUpper.startsWith('C') || isFCorFE;
-
-        if (selectedVehicle.type === 'Container' && !isFCorFE) {
+        const mismatch = getLicenseMismatchError(selectedDriver, selectedVehicle);
+        if (mismatch) {
           setError('driverId', {
             type: 'manual',
-            message: `Driver ${selectedDriver.fullName} (${selectedDriver.licenseNumber}) cannot drive Container vehicles (Class FC/FE required).`
-          });
-          hasError = true;
-        } else if ((selectedVehicle.type === 'Truck' || selectedVehicle.type === 'Refrigerated') && (licenseUpper.startsWith('B2') || licenseUpper.includes('B2-')) && !isClassC) {
-          setError('driverId', {
-            type: 'manual',
-            message: `Driver ${selectedDriver.fullName} (${selectedDriver.licenseNumber}) has a B2 license (Requires Class C for ${selectedVehicle.type}).`
+            message: mismatch
           });
           hasError = true;
         }
@@ -445,7 +459,7 @@ export function Shipments() {
                       </label>
                       <select {...register('vehicleId')} className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none cursor-pointer">
                         <option value="">-- Choose available vehicle --</option>
-                        {vehicles?.map(v => (
+                        {vehicles?.filter(v => !v.isUnderMaintenance).map(v => (
                           <option key={v.id} value={v.id}>
                             {v.plateNumber} ({v.type} • Max {v.maxPayloadKg ? v.maxPayloadKg.toLocaleString() : 0}kg / {v.maxVolumeM3}m³)
                           </option>
@@ -458,11 +472,24 @@ export function Shipments() {
                       <label className="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-2">
                         <User className="w-4 h-4 text-indigo-500"/> Select Driver
                       </label>
-                      <select {...register('driverId')} className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none cursor-pointer">
+                      <select 
+                        {...register('driverId')} 
+                        className={`w-full px-4 py-3.5 rounded-xl border-2 transition-all outline-none appearance-none cursor-pointer ${
+                          realTimeLicenseError || errors.driverId 
+                            ? 'border-red-500 bg-red-50/20 text-red-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 font-medium' 
+                            : 'border-gray-200 bg-white hover:border-gray-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'
+                        }`}
+                      >
                         <option value="">-- Choose available driver --</option>
                         {drivers?.map(d => <option key={d.id} value={d.id}>{d.fullName} ({d.licenseNumber})</option>)}
                       </select>
-                      {errors.driverId && <p className="text-red-500 text-xs font-semibold animate-pulse">{errors.driverId.message}</p>}
+                      
+                      {(realTimeLicenseError || errors.driverId) && (
+                        <div className="flex items-start gap-2.5 p-3.5 bg-red-50/90 border-2 border-red-200 rounded-xl text-red-700 text-xs font-bold animate-in fade-in slide-in-from-top-1 shadow-sm">
+                          <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                          <span>{realTimeLicenseError || errors.driverId?.message}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -487,10 +514,11 @@ export function Shipments() {
                           </div>
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 tracking-wider">Time To</label>
-                            <input type="time" {...register('pickupWindowEnd')} className="w-full px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-amber-400 transition-all outline-none text-sm font-medium text-gray-700" />
+                            <input type="time" {...register('pickupWindowEnd')} className={`w-full px-3 py-2.5 rounded-xl border-2 transition-all outline-none text-sm font-medium ${errors.pickupWindowEnd ? 'border-red-500 bg-red-50/30 text-red-900' : 'border-gray-100 bg-gray-50/50 focus:bg-white focus:border-amber-400'}`} />
                           </div>
                         </div>
                       </div>
+                      {errors.pickupWindowEnd && <p className="text-red-500 text-xs font-semibold pl-6">{errors.pickupWindowEnd.message}</p>}
                     </div>
                   </div>
 
@@ -515,17 +543,18 @@ export function Shipments() {
                           </div>
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 tracking-wider">Time To</label>
-                            <input type="time" {...register('deliveryWindowEnd')} className="w-full px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-emerald-400 transition-all outline-none text-sm font-medium text-gray-700" />
+                            <input type="time" {...register('deliveryWindowEnd')} className={`w-full px-3 py-2.5 rounded-xl border-2 transition-all outline-none text-sm font-medium ${errors.deliveryWindowEnd ? 'border-red-500 bg-red-50/30 text-red-900' : 'border-gray-100 bg-gray-50/50 focus:bg-white focus:border-emerald-400'}`} />
                           </div>
                         </div>
                       </div>
+                      {errors.deliveryWindowEnd && <p className="text-red-500 text-xs font-semibold pl-6">{errors.deliveryWindowEnd.message}</p>}
                     </div>
                   </div>
 
                   <div className="pt-6 border-t border-gray-100">
                     <button 
                       type="submit"
-                      disabled={assignMutation.isPending}
+                      disabled={assignMutation.isPending || !!realTimeLicenseError}
                       className="group w-full flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-gray-900/20 hover:shadow-blue-600/30 hover:-translate-y-0.5 disabled:translate-y-0 disabled:shadow-none"
                     >
                       {assignMutation.isPending ? (

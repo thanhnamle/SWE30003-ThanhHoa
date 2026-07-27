@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router';
+import { Link, useNavigate, useLocation, Navigate } from 'react-router';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,15 +38,14 @@ const FEATURES = [
 ];
 
 export function Login() {
-  const { login } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // State điều khiển việc hiển thị màn hình Intro Animation
   const [showIntro, setShowIntro] = useState(false);
 
   const {
@@ -56,6 +55,10 @@ export function Login() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
+
+  if (isAuthenticated && !showIntro) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const onSubmit = async (data: LoginFormValues) => {
     setServerError(null);

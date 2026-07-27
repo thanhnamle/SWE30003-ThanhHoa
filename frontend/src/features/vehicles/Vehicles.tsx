@@ -5,13 +5,51 @@ import { z } from "zod";
 import { PageContainer } from "@/components/common/PageContainer";
 import { Modal } from "@/components/common/Modal";
 import { Vehicle, shipmentApi } from "../shipments/api/shipmentApi";
-import { Truck, Wrench, Weight, Box, Activity, Plus, Loader2, Car, Snowflake, Package } from 'lucide-react';
+import { Truck, Wrench, Weight, Box, Activity, Plus, Loader2, Car, Snowflake, Package, Edit2, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
+
+/**
+ * Standardize & normalize Vietnamese License Plate Format
+ * Region: 11 - 99 (TP.HCM: 51, 59, 41; Hanoi: 29, 30, 31, 32, 33, 40; etc.)
+ * Series: A, B, C, D, E, F, G, H, K, L, M, N, P, S, T, U, V, X, Y, Z, LD, RM, KT, DA
+ * Format: 51A-123.45, 29C-999.99, 30F-123.45, 60LD-123.45
+ */
+export const normalizeVietnamesePlate = (val: string): string => {
+  if (!val) return '';
+  let cleaned = val.trim().toUpperCase().replace(/\s+/g, '');
+  
+  // Auto insert hyphen if user typed 51A12345 or 51a123.45
+  const autoHyphenRegex = /^([1-9][0-9][A-Z]{1,2}\d?)(?=[0-9])/;
+  if (!cleaned.includes('-') && autoHyphenRegex.test(cleaned)) {
+    cleaned = cleaned.replace(autoHyphenRegex, '$1-');
+  }
+
+  // Auto insert dot if user typed 51A-12345
+  if (/^[1-9][0-9][A-Z]{1,2}\d?-\d{5}$/.test(cleaned)) {
+    cleaned = cleaned.replace(/^([1-9][0-9][A-Z]{1,2}\d?-\d{3})(\d{2})$/, '$1.$2');
+  }
+
+  return cleaned;
+};
+
+export const isValidVietnamesePlate = (plate: string): boolean => {
+  const norm = normalizeVietnamesePlate(plate);
+  // Region codes: 11 to 99
+  // Series letter(s): 1 or 2 uppercase letters + optional digit
+  // Number part: 3 digits . 2 digits (123.45) or 4-5 digits (1234 / 12345)
+  const vnPlateRegex = /^(1[1-9]|[2-9][0-9])([A-Z]{1,2}\d?)-(\d{3}\.\d{2}|\d{4,5})$/;
+  return vnPlateRegex.test(norm);
+};
 
 const vehicleSchema = z.object({
-  plateNumber: z.string().min(1, 'Plate number is required'),
+  plateNumber: z.string()
+    .min(1, 'Plate number is required')
+    .refine((val) => isValidVietnamesePlate(val), {
+      message: 'Invalid Vietnamese plate format. Example: 51A-123.45 or 29C-999.99 (Region 11-99)'
+    }),
   type: z.enum(['Van', 'Truck', 'Container', 'Refrigerated']),
   maxPayloadKg: z.number().min(1, 'Max payload must be at least 1kg'),
   maxVolumeM3: z.number().min(0.1, 'Max volume must be at least 0.1m³'),
+  isUnderMaintenance: z.boolean(),
   branchId: z.string(),
 });
 
@@ -113,17 +151,21 @@ export function Vehicles() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [deletingVehicleId, setDeletingVehicleId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue, setError } = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
     defaultValues: {
       type: 'Van',
+      isUnderMaintenance: false,
       branchId: '11111111-1111-1111-1111-111111111111'
     }
   });
 
   const selectedType = watch('type');
+  const watchedPlate = watch('plateNumber');
 
   useEffect(() => {
     fetchVehicles();
@@ -137,7 +179,69 @@ export function Vehicles() {
     });
   };
 
+  const handleOpenAdd = () => {
+    setEditingVehicle(null);
+    reset({
+      plateNumber: '',
+      type: 'Van',
+      maxPayloadKg: VEHICLE_DOMAIN_BOUNDS['Van'].defaultPayloadKg,
+      maxVolumeM3: VEHICLE_DOMAIN_BOUNDS['Van'].defaultVolumeM3,
+      isUnderMaintenance: false,
+      branchId: '11111111-1111-1111-1111-111111111111'
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
+    reset({
+      plateNumber: vehicle.plateNumber,
+      type: vehicle.type as any,
+      maxPayloadKg: vehicle.maxPayloadKg,
+      maxVolumeM3: vehicle.maxVolumeM3,
+      isUnderMaintenance: vehicle.isUnderMaintenance,
+      branchId: vehicle.branchId || '11111111-1111-1111-1111-111111111111'
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    setIsSubmitting(true);
+    try {
+      await shipmentApi.deleteVehicle(id);
+      setDeletingVehicleId(null);
+      fetchVehicles();
+    } catch (error) {
+      console.error("Failed to delete vehicle:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const onSubmit = async (data: VehicleFormValues) => {
+    const normalizedPlate = normalizeVietnamesePlate(data.plateNumber);
+    if (!isValidVietnamesePlate(normalizedPlate)) {
+      setError('plateNumber', {
+        type: 'manual',
+        message: 'Invalid Vietnamese plate format. Example: 51A-123.45 or 29C-999.99 (Region 11-99)'
+      });
+      return;
+    }
+
+    // Check duplicate plate number in existing vehicles
+    const isDuplicate = vehicles.some(v => 
+      (!editingVehicle || v.id !== editingVehicle.id) && 
+      v.plateNumber.toUpperCase().replace(/[\s\.-]+/g, '') === normalizedPlate.toUpperCase().replace(/[\s\.-]+/g, '')
+    );
+
+    if (isDuplicate) {
+      setError('plateNumber', {
+        type: 'manual',
+        message: `Plate number '${normalizedPlate}' already exists in fleet.`
+      });
+      return;
+    }
+
     const bounds = VEHICLE_DOMAIN_BOUNDS[data.type];
     if (bounds) {
       let hasError = false;
@@ -160,15 +264,21 @@ export function Vehicles() {
 
     setIsSubmitting(true);
     try {
-      await shipmentApi.createVehicle({
+      const payload = {
         ...data,
-        isUnderMaintenance: false
-      });
+        plateNumber: normalizedPlate
+      };
+
+      if (editingVehicle) {
+        await shipmentApi.updateVehicle(editingVehicle.id, payload);
+      } else {
+        await shipmentApi.createVehicle(payload);
+      }
       setIsModalOpen(false);
       reset();
       fetchVehicles();
     } catch (error) {
-      console.error("Failed to create vehicle:", error);
+      console.error("Failed to save vehicle:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -180,8 +290,8 @@ export function Vehicles() {
       description="Manage and monitor your active transport vehicles."
       action={
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="sfm-cta flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+          onClick={handleOpenAdd}
+          className="sfm-cta flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
         >
           <Plus className="w-4 h-4" /> Add Vehicle
         </button>
@@ -237,24 +347,44 @@ export function Vehicles() {
                       {renderVehicleIcon(vehicle.type, "w-7 h-7")}
                     </div>
                     
-                    {/* Status Badge */}
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border transition-colors ${
-                      isMaintenance 
-                        ? 'bg-red-50 text-red-700 border-red-200/60' 
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
-                    }`}>
-                      {isMaintenance ? (
-                        <>
-                          <Wrench className="w-3 h-3" />
-                          Maintenance
-                        </>
-                      ) : (
-                        <>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          Available
-                        </>
-                      )}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {/* Status Badge */}
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border transition-colors ${
+                        isMaintenance 
+                          ? 'bg-red-50 text-red-700 border-red-200/60' 
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                      }`}>
+                        {isMaintenance ? (
+                          <>
+                            <Wrench className="w-3 h-3" />
+                            Maintenance
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Available
+                          </>
+                        )}
+                      </span>
+
+                      {/* Edit Action */}
+                      <button 
+                        onClick={() => handleOpenEdit(vehicle)}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                        title="Edit Vehicle"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+
+                      {/* Delete Action */}
+                      <button 
+                        onClick={() => setDeletingVehicleId(vehicle.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                        title="Delete Vehicle"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="relative z-10">
@@ -305,20 +435,35 @@ export function Vehicles() {
         )}
       </div>
 
+      {/* Add / Edit Vehicle Modal */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
-        title="Add New Vehicle"
+        title={editingVehicle ? "Edit Vehicle" : "Add New Vehicle"}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Plate Number</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm font-semibold text-gray-700">Plate Number (Vietnamese Standard)</label>
+              {watchedPlate && isValidVietnamesePlate(watchedPlate) && (
+                <span className="text-emerald-600 text-xs font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Valid VN Plate
+                </span>
+              )}
+            </div>
             <input 
               {...register('plateNumber')} 
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              placeholder="e.g. 51A-123.45"
+              onBlur={(e) => {
+                const formatted = normalizeVietnamesePlate(e.target.value);
+                if (formatted !== e.target.value) {
+                  setValue('plateNumber', formatted, { shouldValidate: true });
+                }
+              }}
+              className="w-full px-4 py-2.5 font-mono font-bold text-lg tracking-wider border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+              placeholder="e.g. 51A-123.45 or 29C-999.99"
             />
-            {errors.plateNumber && <p className="text-red-500 text-xs mt-1">{errors.plateNumber.message}</p>}
+            {errors.plateNumber && <p className="text-red-500 text-xs font-semibold mt-1">{errors.plateNumber.message}</p>}
+            <p className="text-[11px] text-gray-400 mt-1">Region code (11-99) + Series (A-Z/LD/RM) + Number (e.g. 51A-123.45)</p>
           </div>
           
           <div>
@@ -331,7 +476,14 @@ export function Vehicles() {
                   <button
                     key={opt.type}
                     type="button"
-                    onClick={() => setValue('type', opt.type as any)}
+                    onClick={() => {
+                      setValue('type', opt.type as any);
+                      const bounds = VEHICLE_DOMAIN_BOUNDS[opt.type];
+                      if (bounds && !editingVehicle) {
+                        setValue('maxPayloadKg', bounds.defaultPayloadKg);
+                        setValue('maxVolumeM3', bounds.defaultVolumeM3);
+                      }
+                    }}
                     className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
                       isSelected
                         ? 'border-blue-600 bg-blue-50/80 shadow-sm ring-2 ring-blue-500/10'
@@ -365,48 +517,99 @@ export function Vehicles() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Payload (kg)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Max Payload (kg)</label>
               <input 
                 {...register('maxPayloadKg', { valueAsNumber: true })} 
                 type="number"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
                 placeholder={`e.g. ${VEHICLE_DOMAIN_BOUNDS[selectedType]?.defaultPayloadKg || 1000}`}
               />
-              {errors.maxPayloadKg && <p className="text-red-500 text-xs mt-1">{errors.maxPayloadKg.message}</p>}
+              {errors.maxPayloadKg && <p className="text-red-500 text-xs font-semibold mt-1">{errors.maxPayloadKg.message}</p>}
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Volume (m³)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Max Volume (m³)</label>
               <input 
                 {...register('maxVolumeM3', { valueAsNumber: true })} 
                 type="number"
                 step="0.1"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
                 placeholder={`e.g. ${VEHICLE_DOMAIN_BOUNDS[selectedType]?.defaultVolumeM3 || 15.5}`}
               />
-              {errors.maxVolumeM3 && <p className="text-red-500 text-xs mt-1">{errors.maxVolumeM3.message}</p>}
+              {errors.maxVolumeM3 && <p className="text-red-500 text-xs font-semibold mt-1">{errors.maxVolumeM3.message}</p>}
             </div>
+          </div>
+
+          {/* Maintenance Status Toggle */}
+          <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-200/80 flex items-center justify-between mt-2">
+            <div>
+              <p className="text-sm font-bold text-gray-900">Maintenance Status</p>
+              <p className="text-xs text-gray-500">Flag this vehicle as under maintenance to temporarily suspend assignments.</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                {...register('isUnderMaintenance')} 
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+            </label>
           </div>
 
           <div className="pt-4 border-t border-gray-100 flex justify-end gap-3 mt-6">
             <button 
               type="button" 
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-5 py-2.5 text-gray-700 font-bold hover:bg-gray-100 rounded-xl transition-colors text-sm"
             >
               Cancel
             </button>
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 text-sm shadow-md shadow-blue-600/20"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Save Vehicle
+              {editingVehicle ? "Update Vehicle" : "Save Vehicle"}
             </button>
           </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      {deletingVehicleId && (
+        <Modal
+          isOpen={!!deletingVehicleId}
+          onClose={() => setDeletingVehicleId(null)}
+          title="Confirm Vehicle Deletion"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-semibold">
+              <AlertCircle className="w-6 h-6 text-red-600 shrink-0" />
+              <span>Are you sure you want to delete this vehicle? This action cannot be undone.</span>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => setDeletingVehicleId(null)}
+                className="px-4 py-2 text-gray-700 font-bold hover:bg-gray-100 rounded-xl transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => handleDelete(deletingVehicleId)}
+                className="flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 text-sm shadow-md shadow-red-600/20"
+              >
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Delete Vehicle
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </PageContainer>
   );
 }

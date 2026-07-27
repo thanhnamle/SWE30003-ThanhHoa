@@ -72,7 +72,7 @@ export const shipmentApi = {
 
   getVehicles: async (): Promise<Vehicle[]> => {
     const response = await apiClient.get<Vehicle[]>('/api/vehicles');
-    return response.data.filter((v) => !v.isUnderMaintenance);
+    return response.data;
   },
 
   getDrivers: async (): Promise<Driver[]> => {
@@ -97,6 +97,15 @@ export const shipmentApi = {
   createVehicle: async (vehicle: Omit<Vehicle, 'id'>): Promise<Vehicle> => {
     const response = await apiClient.post<Vehicle>('/api/vehicles', vehicle);
     return response.data;
+  },
+
+  updateVehicle: async (id: string, vehicle: Omit<Vehicle, 'id'>): Promise<Vehicle> => {
+    const response = await apiClient.put<Vehicle>(`/api/vehicles/${id}`, vehicle);
+    return response.data;
+  },
+
+  deleteVehicle: async (id: string): Promise<void> => {
+    await apiClient.delete(`/api/vehicles/${id}`);
   },
 
   updateShipmentStatus: async (id: string, status: ShipmentStatus): Promise<Shipment> => {

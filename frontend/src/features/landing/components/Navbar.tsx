@@ -1,13 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, LayoutDashboard } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SmartFMLogo } from '../../../components/common/SmartFMLogo';
+import { useAuth } from '../../auth/context/AuthContext';
 
 export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -102,20 +104,33 @@ export const Navbar = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
-          <Link
-            to="/login"
-            className="text-sm font-semibold text-slate-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            to="/login"
-            className="relative inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all overflow-hidden group"
-          >
-            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
-            Request a Free Demo
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              to="/dashboard"
+              className="relative inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all overflow-hidden group"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Go to Dashboard ({user?.fullName ? user.fullName.split(' ')[0] : 'User'})</span>
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-sm font-semibold text-slate-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                to="/login"
+                className="relative inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all overflow-hidden group"
+              >
+                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
+                Request a Free Demo
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </motion.header>
