@@ -63,8 +63,8 @@ const Building = ({
         height: d,
         background: colorTop,
         transform: `translateZ(${h}px)`,
-        borderRadius: 2,
-        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.4)',
+        borderRadius: 3,
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.5)',
       }}
     />
     {/* Mặt trước */}
@@ -76,8 +76,8 @@ const Building = ({
         background: colorFront,
         transform: `rotateX(-90deg) translateY(${d}px)`,
         transformOrigin: 'top',
-        borderRadius: '0 0 2px 2px',
-        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.2)',
+        borderRadius: '0 0 3px 3px',
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.25)',
       }}
     />
     {/* Mặt bên hông */}
@@ -89,8 +89,8 @@ const Building = ({
         background: colorSide,
         transform: `rotateY(90deg) translateX(${w}px)`,
         transformOrigin: 'left',
-        borderRadius: '0 0 2px 2px',
-        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)',
+        borderRadius: '0 0 3px 3px',
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.18)',
       }}
     />
   </div>
@@ -107,7 +107,7 @@ const IsometricPlatform = () => {
       const rect = containerRef.current.getBoundingClientRect();
       const x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
       const y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
-      setMousePos({ x: x * 8, y: y * -6 });
+      setMousePos({ x: x * 10, y: y * -8 });
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -122,313 +122,436 @@ const IsometricPlatform = () => {
       <motion.div
         className="relative"
         style={{ transformStyle: 'preserve-3d' }}
-        animate={{ rotateX: 12 + mousePos.y, rotateY: -8 + mousePos.x }}
-        transition={{ type: 'spring', stiffness: 60, damping: 20 }}
+        animate={{ rotateX: 14 + mousePos.y, rotateY: -10 + mousePos.x }}
+        transition={{ type: 'spring', stiffness: 50, damping: 18 }}
       >
-        {/* Card kính chính */}
-        <div
-          className="rounded-3xl p-5 relative overflow-hidden"
-          style={{
-            background: 'rgba(255, 255, 255, 0.65)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            border: '1px solid rgba(255, 255, 255, 0.5)',
-            boxShadow:
-              '0 8px 32px rgba(31, 38, 135, 0.07), inset 0 1px 0 rgba(255,255,255,0.6)',
-            transformStyle: 'preserve-3d',
-          }}
-        >
-          {/* Inner content area */}
-          <div
-            className="relative rounded-2xl overflow-hidden aspect-[4/3] border border-slate-200/60"
+        {/* ─── Khung Ngoại Viền Màu Chạy (Running Border Light) ─── */}
+        <div className="relative rounded-[26px] p-[2px] overflow-hidden shadow-2xl">
+          {/* Vệt màu Gradient xoay 360 độ tạo hiệu ứng viền chạy */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 5, ease: 'linear' }}
+            className="absolute -inset-[150%] origin-center pointer-events-none"
             style={{
-              background: 'linear-gradient(to bottom right, #f8fafc, #f1f5f9)',
+              background:
+                'conic-gradient(from 0deg, transparent 0%, transparent 65%, #06b6d4 80%, #3b82f6 90%, #a855f7 100%)',
+            }}
+          />
+
+          {/* Card kính chính */}
+          <div
+            className="rounded-[24px] p-5 md:p-6 relative overflow-hidden z-10"
+            style={{
+              background: 'rgba(255, 255, 255, 0.82)',
+              backdropFilter: 'blur(24px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(200%)',
+              boxShadow:
+                '0 20px 50px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255,255,255,0.9)',
+              transformStyle: 'preserve-3d',
             }}
           >
-            {/* Không gian Isometric 3D */}
+            {/* Inner content area */}
             <div
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              style={{ transformStyle: 'preserve-3d' }}
+              className="relative rounded-2xl overflow-hidden aspect-[4/3] border border-slate-200/80 shadow-inner"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% 30%, #f8fafc, #e2e8f0)',
+              }}
             >
+              {/* Viền sáng Laser quét xung quanh khung màn hình bên trong */}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none z-30"
+                style={{ filter: 'drop-shadow(0 0 3px #3b82f6)' }}
+              >
+                <rect
+                  x="1"
+                  y="1"
+                  width="99.5%"
+                  height="99.5%"
+                  rx="15"
+                  fill="none"
+                  stroke="url(#innerBorderGrad)"
+                  strokeWidth="2"
+                  strokeDasharray="120 300"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    from="840"
+                    to="0"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
+                </rect>
+                <defs>
+                  <linearGradient
+                    id="innerBorderGrad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#06b6d4" />
+                    <stop offset="50%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              {/* Không gian Isometric 3D */}
               <div
-                className="relative"
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                <div
+                  className="relative"
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    transform: 'rotateX(55deg) rotateZ(-45deg)',
+                    width: 0,
+                    height: 0,
+                  }}
+                >
+                  {/* Ground Plane */}
+                  <div
+                    className="absolute rounded-3xl border-2 border-blue-300/50"
+                    style={{
+                      width: 340,
+                      height: 340,
+                      left: -170,
+                      top: -170,
+                      background:
+                        'radial-gradient(circle, rgba(219,234,254,0.6) 0%, rgba(186,230,253,0.3) 70%, rgba(191,219,254,0.15) 100%)',
+                      transform: 'translateZ(-2px)',
+                      boxShadow: '0 0 40px rgba(59, 130, 246, 0.15)',
+                    }}
+                  >
+                    {/* Họa tiết Lưới Grid */}
+                    <div
+                      className="absolute inset-0 rounded-3xl opacity-30"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(#3b82f6 1px, transparent 1px)',
+                        backgroundSize: '16px 16px',
+                      }}
+                    />
+                  </div>
+
+                  {/* Vòng định vị GPS phát sáng */}
+                  <div
+                    className="absolute w-12 h-12 rounded-full border-2 border-cyan-400/60 animate-ping"
+                    style={{
+                      left: -140,
+                      top: 0,
+                      transform: 'translate(-50%, -50%) translateZ(1px)',
+                    }}
+                  />
+                  <div
+                    className="absolute w-14 h-14 rounded-full border-2 border-blue-500/60 animate-pulse"
+                    style={{
+                      left: 0,
+                      top: 0,
+                      transform: 'translate(-50%, -50%) translateZ(1px)',
+                    }}
+                  />
+                  <div
+                    className="absolute w-12 h-12 rounded-full border-2 border-indigo-400/60 animate-ping"
+                    style={{
+                      left: 140,
+                      top: 0,
+                      transform: 'translate(-50%, -50%) translateZ(1px)',
+                    }}
+                  />
+
+                  {/* Route Line */}
+                  <svg
+                    width="340"
+                    height="340"
+                    style={{
+                      position: 'absolute',
+                      left: -170,
+                      top: -170,
+                      transform: 'translateZ(2px)',
+                      filter: 'drop-shadow(0 0 6px rgba(6, 182, 212, 0.5))',
+                    }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="routeGrad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <stop offset="0%" stopColor="#06b6d4" />
+                        <stop offset="50%" stopColor="#3b82f6" />
+                        <stop offset="100%" stopColor="#6366f1" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M 30 170 C 100 60, 240 280, 310 170"
+                      stroke="url(#routeGrad)"
+                      strokeWidth="4.5"
+                      fill="none"
+                      strokeDasharray="8 5"
+                      strokeLinecap="round"
+                    >
+                      <animate
+                        attributeName="stroke-dashoffset"
+                        from="130"
+                        to="0"
+                        dur="2.2s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                  </svg>
+
+                  {/* Các Khối Nhà 3D */}
+                  <Building
+                    x={-120}
+                    y={-120}
+                    w={42}
+                    d={42}
+                    h={48}
+                    colorTop="#93c5fd"
+                    colorFront="#2563eb"
+                    colorSide="#1d4ed8"
+                  />
+                  <Building
+                    x={40}
+                    y={-125}
+                    w={38}
+                    d={38}
+                    h={58}
+                    colorTop="#c7d2fe"
+                    colorFront=""
+                    colorSide=""
+                  />
+                  <Building
+                    x={100}
+                    y={75}
+                    w={40}
+                    d={40}
+                    h={42}
+                    colorTop="#a5f3fc"
+                    colorFront="#0891b2"
+                    colorSide="#0e7490"
+                  />
+                  <Building
+                    x={-125}
+                    y={85}
+                    w={36}
+                    d={36}
+                    h={40}
+                    colorTop="#cbd5e1"
+                    colorFront="#475569"
+                    colorSide="#334155"
+                  />
+                  <Building
+                    x={-20}
+                    y={-135}
+                    w={26}
+                    d={26}
+                    h={30}
+                    colorTop="#6ee7b7"
+                    colorFront="#059669"
+                    colorSide="#047857"
+                  />
+
+                  {/* Vệt Bóng 3D Đổ Xuống Mặt Đất */}
+                  <div
+                    className="absolute w-10 h-10 rounded-full bg-cyan-900/25 blur-md"
+                    style={{
+                      left: -140,
+                      top: 20,
+                      transform: 'translate(-50%, -50%) scaleY(0.4)',
+                    }}
+                  />
+                  <div
+                    className="absolute w-12 h-12 rounded-full bg-blue-900/30 blur-md"
+                    style={{
+                      left: 0,
+                      top: 20,
+                      transform: 'translate(-50%, -50%) scaleY(0.4)',
+                    }}
+                  />
+                  <div
+                    className="absolute w-10 h-10 rounded-full bg-indigo-900/25 blur-md"
+                    style={{
+                      left: 140,
+                      top: 20,
+                      transform: 'translate(-50%, -50%) scaleY(0.4)',
+                    }}
+                  />
+
+                  {/* 3D Floating Vehicle Icons */}
+                  <div
+                    className="absolute"
+                    style={{
+                      left: -35,
+                      top: 0,
+                      transform:
+                        'translate3d(-90px, 0px, -20px) rotateZ(45deg) rotateX(-55deg)',
+                      transformStyle: 'preserve-3d',
+                    }}
+                  >
+                    <motion.div
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 3.5,
+                        ease: 'easeInOut',
+                      }}
+                      className="w-13 h-13 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-cyan-300 flex items-center justify-center -translate-x-1/2 -translate-y-1/2 group"
+                    >
+                      <MapPin className="h-6 w-6 text-cyan-600 drop-shadow" />
+                    </motion.div>
+                  </div>
+
+                  <div
+                    className="absolute"
+                    style={{
+                      left: -10,
+                      top: 0,
+                      transform:
+                        'translate3d(0px, 0px, -10px) rotateZ(45deg) rotateX(-55deg)',
+                      transformStyle: 'preserve-3d',
+                    }}
+                  >
+                    <motion.div
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 4,
+                        ease: 'easeInOut',
+                      }}
+                      className="w-14 h-14 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-2xl shadow-2xl border-2 border-white flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
+                    >
+                      <Truck className="h-7 w-7 text-white drop-shadow-md" />
+                    </motion.div>
+                  </div>
+
+                  <div
+                    className="absolute"
+                    style={{
+                      left: 140,
+                      top: 0,
+                      transform:
+                        'translate3d(0px, 0px, -15px) rotateZ(45deg) rotateX(-55deg)',
+                      transformStyle: 'preserve-3d',
+                    }}
+                  >
+                    <motion.div
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 3.8,
+                        ease: 'easeInOut',
+                      }}
+                      className="w-13 h-13 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-indigo-300 flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
+                    >
+                      <Gauge className="h-6 w-6 text-indigo-600 drop-shadow" />
+                    </motion.div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Badge 1: Live Status */}
+              <motion.div
+                initial={{ opacity: 0, y: -20, scale: 0.8 }}
+                animate={{ opacity: 1, y: [0, -5, 0], scale: 1 }}
+                transition={{
+                  opacity: { duration: 0.5, delay: 0.9 },
+                  scale: { duration: 0.5, delay: 0.9 },
+                  y: { repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 0.9 },
+                }}
+                className="absolute top-4 right-4 z-20 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg"
                 style={{
-                  transformStyle: 'preserve-3d',
-                  transform: 'rotateX(55deg) rotateZ(-45deg)',
-                  width: 0,
-                  height: 0,
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.9)',
                 }}
               >
-                {/* Ground Plane */}
-                <div
-                  className="absolute rounded-3xl border border-blue-200/40"
-                  style={{
-                    width: 260,
-                    height: 260,
-                    left: -130,
-                    top: -130,
-                    background:
-                      'linear-gradient(to bottom right, rgba(191,219,254,0.35), rgba(207,250,254,0.25))',
-                    transform: 'translateZ(-2px)',
-                  }}
-                />
-
-                {/* Route Line */}
-                <svg
-                  width="260"
-                  height="260"
-                  style={{
-                    position: 'absolute',
-                    left: -130,
-                    top: -130,
-                    transform: 'translateZ(2px)',
-                  }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="routeGrad"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#06b6d4" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M 30 130 C 80 50, 180 210, 230 130"
-                    stroke="url(#routeGrad)"
-                    strokeWidth="3.5"
-                    fill="none"
-                    strokeDasharray="6 4"
-                    opacity="0.8"
-                  >
-                    <animate
-                      attributeName="stroke-dashoffset"
-                      from="100"
-                      to="0"
-                      dur="2.5s"
-                      repeatCount="indefinite"
-                    />
-                  </path>
-                </svg>
-
-                {/* Khối nhà (Đã điều chỉnh vị trí xa tuyến đường) */}
-                <Building
-                  x={-90}
-                  y={-90}
-                  w={32}
-                  d={32}
-                  h={35}
-                  colorTop="#93c5fd"
-                  colorFront="#2563eb"
-                  colorSide="#1d4ed8"
-                />
-                <Building
-                  x={30}
-                  y={-95}
-                  w={30}
-                  d={30}
-                  h={45}
-                  colorTop="#a5b4fc"
-                  colorFront=""
-                  colorSide=""
-                />
-                <Building
-                  x={75}
-                  y={55}
-                  w={32}
-                  d={32}
-                  h={30}
-                  colorTop="#67e8f9"
-                  colorFront="#0891b2"
-                  colorSide="#0e7490"
-                />
-                <Building
-                  x={-95}
-                  y={65}
-                  w={28}
-                  d={28}
-                  h={32}
-                  colorTop="#cbd5e1"
-                  colorFront="#475569"
-                  colorSide="#334155"
-                />
-
-                {/* ─── 3D Floating Vehicle Icons (Nổi hẳn lên trên tuyến đường) ─── */}
-                
-                {/* Icon 1: MapPin (Đầu tuyến đường - Bên trái) */}
-                <div
-                  className="absolute"
-                  style={{
-                    left: -35,
-                    top: 0,
-                    transform:
-                      'translate3d(-95px, 0px, 5px) rotateZ(45deg) rotateX(-55deg)',
-                    transformStyle: 'preserve-3d',
-                  }}
-                >
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 3.5,
-                      ease: 'easeInOut',
-                    }}
-                    className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-cyan-200/80 flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
-                  >
-                    <MapPin className="h-5 w-5 text-cyan-600" />
-                  </motion.div>
+                <div className="flex h-3 w-3 relative">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
                 </div>
-
-                {/* Icon 2: Truck (Giữa tuyến đường - Trung tâm) */}
-                <div
-                  className="absolute"
-                  style={{
-                    left: 0,
-                    top: 0,
-                    transform:
-                      'translate3d(0px, 0px, -5px) rotateZ(45deg) rotateX(-55deg)',
-                    transformStyle: 'preserve-3d',
-                  }}
-                >
-                  <motion.div
-                    animate={{ y: [0, -8, 0] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 4,
-                      ease: 'easeInOut',
-                    }}
-                    className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-blue-200/80 flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
-                  >
-                    <Truck className="h-5 w-5 text-blue-600" />
-                  </motion.div>
+                <div>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider">
+                    Live Fleet Status
+                  </span>
+                  <span className="text-xs font-extrabold text-slate-900">
+                    1,248 Active Vehicles
+                  </span>
                 </div>
+              </motion.div>
 
-                {/* Icon 3: Gauge (Cuối tuyến đường - Bên phải) */}
-                <div
-                  className="absolute"
-                  style={{
-                    left: 0,
-                    top: 0,
-                    transform:
-                      'translate3d(95px, 0px, 5px) rotateZ(45deg) rotateX(-55deg)',
-                    transformStyle: 'preserve-3d',
-                  }}
-                >
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 3.8,
-                      ease: 'easeInOut',
-                    }}
-                    className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-indigo-200/80 flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
-                  >
-                    <Gauge className="h-5 w-5 text-indigo-600" />
-                  </motion.div>
+              {/* Badge 2: Fuel Optimization */}
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                animate={{ opacity: 1, y: [0, 5, 0], scale: 1 }}
+                transition={{
+                  opacity: { duration: 0.5, delay: 1.1 },
+                  scale: { duration: 0.5, delay: 1.1 },
+                  y: { repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1.1 },
+                }}
+                className="absolute bottom-4 left-4 z-20 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.9)',
+                }}
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
+                  <TrendingUp className="h-4 w-4" />
                 </div>
-              </div>
+                <div>
+                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider">
+                    Fuel Savings
+                  </span>
+                  <span className="text-xs font-black text-emerald-600">
+                    -18.4% Efficiency
+                  </span>
+                </div>
+              </motion.div>
+
+              {/* Badge 3: On-Time Delivery */}
+              <motion.div
+                initial={{ opacity: 0, x: -20, scale: 0.8 }}
+                animate={{ opacity: 1, y: [0, -4, 0], x: 0, scale: 1 }}
+                transition={{
+                  opacity: { duration: 0.5, delay: 1.3 },
+                  scale: { duration: 0.5, delay: 1.3 },
+                  x: { duration: 0.5, delay: 1.3 },
+                  y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut', delay: 1.3 },
+                }}
+                className="absolute top-4 left-4 z-20 px-3.5 py-2 rounded-2xl flex items-center gap-2.5 shadow-lg"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.9)',
+                }}
+              >
+                <div className="p-1 rounded-lg bg-cyan-50 text-cyan-600">
+                  <Navigation className="h-3.5 w-3.5 fill-cyan-500" />
+                </div>
+                <span className="text-xs font-extrabold text-slate-800">
+                  99.4% On-Time
+                </span>
+              </motion.div>
             </div>
-
-            {/* Badge 1: Top Right */}
-            <motion.div
-              initial={{ opacity: 0, y: -20, scale: 0.8 }}
-              animate={{ opacity: 1, y: [0, -4, 0], scale: 1 }}
-              transition={{
-                opacity: { duration: 0.5, delay: 0.9 },
-                scale: { duration: 0.5, delay: 0.9 },
-                y: { repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 0.9 },
-              }}
-              className="absolute top-4 right-4 z-20 px-3.5 py-2 rounded-2xl flex items-center gap-2.5"
-              style={{
-                background: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.7)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
-              }}
-            >
-              <div className="flex h-2.5 w-2.5 relative">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-              </div>
-              <div>
-                <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
-                  Live Status
-                </span>
-                <span className="text-xs font-bold text-slate-900">
-                  1,248 Vehicles Active
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Badge 2: Bottom Left */}
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.8 }}
-              animate={{ opacity: 1, y: [0, 5, 0], scale: 1 }}
-              transition={{
-                opacity: { duration: 0.5, delay: 1.1 },
-                scale: { duration: 0.5, delay: 1.1 },
-                y: { repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1.1 },
-              }}
-              className="absolute bottom-4 left-4 z-20 px-3.5 py-2 rounded-2xl flex items-center gap-2.5"
-              style={{
-                background: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.7)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
-              }}
-            >
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <TrendingUp className="h-3.5 w-3.5" />
-              </div>
-              <div>
-                <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
-                  Fuel Optimization
-                </span>
-                <span className="text-xs font-bold text-emerald-600">
-                  -18.4% Savings
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Badge 3: Top Left */}
-            <motion.div
-              initial={{ opacity: 0, x: -20, scale: 0.8 }}
-              animate={{ opacity: 1, y: [0, -4, 0], x: 0, scale: 1 }}
-              transition={{
-                opacity: { duration: 0.5, delay: 1.3 },
-                scale: { duration: 0.5, delay: 1.3 },
-                x: { duration: 0.5, delay: 1.3 },
-                y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut', delay: 1.3 },
-              }}
-              className="absolute top-4 left-4 z-20 px-3 py-2 rounded-2xl flex items-center gap-2"
-              style={{
-                background: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.7)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
-              }}
-            >
-              <Navigation className="h-3.5 w-3.5 text-cyan-500" />
-              <span className="text-xs font-extrabold text-slate-800">
-                99.4% On-Time
-              </span>
-            </motion.div>
           </div>
         </div>
 
-        {/* Glow Nền */}
+        {/* Glow Nền phía sau */}
         <div
-          className="absolute -inset-6 -z-10 rounded-[3rem] pointer-events-none"
+          className="absolute -inset-8 -z-10 rounded-[3.5rem] pointer-events-none opacity-80"
           style={{
             background:
-              'linear-gradient(to bottom right, rgba(96,165,250,0.2), rgba(129,140,248,0.1), rgba(34,211,238,0.2))',
-            filter: 'blur(40px)',
+              'radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(6,182,212,0.18) 50%, transparent 75%)',
+            filter: 'blur(45px)',
           }}
         />
       </motion.div>
