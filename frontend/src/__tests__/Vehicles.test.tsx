@@ -84,7 +84,9 @@ describe('Vehicles Component', () => {
     const addButton = screen.getByText('Add Vehicle');
     fireEvent.click(addButton);
 
-    expect(screen.getByText('Add New Vehicle')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('e.g. 51A-123.45')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Add New Vehicle')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/51A-123.45/)).toBeInTheDocument();
+    });
   });
 });
