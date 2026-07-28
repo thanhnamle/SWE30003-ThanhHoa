@@ -12,7 +12,7 @@ export interface Invoice {
 
 export interface PaymentRequest {
   invoiceId: string;
-  paymentMethod: 'CreditCard' | 'BankTransfer' | 'Cash';
+  paymentMethod: 'CreditCard' | 'BankTransfer' | 'EWallet';
   amount: number;
   referenceNumber: string;
 }
@@ -23,6 +23,13 @@ export interface Receipt {
   settledAmount: number;
   transactionReference: string;
   issuedAt: string;
+}
+
+export interface PaymentResponse {
+  paymentId: string;
+  receiptId: string;
+  status: string;
+  message: string;
 }
 
 export const paymentApi = {
@@ -36,8 +43,8 @@ export const paymentApi = {
     return response.data;
   },
 
-  processPayment: async (request: PaymentRequest): Promise<Receipt> => {
-    const response = await apiClient.post<Receipt>(
+  processPayment: async (request: PaymentRequest): Promise<PaymentResponse> => {
+    const response = await apiClient.post<PaymentResponse>(
       `/api/payments/invoice/${request.invoiceId}`,
       {
         amount: request.amount,

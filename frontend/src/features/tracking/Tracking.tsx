@@ -258,19 +258,18 @@ export function Tracking() {
     if (!selectedShipment || !signatureData) return;
     setIsSubmittingPod(true);
     
-    // Update local status to Delivered
-    setDisplayList(prev => prev.map(s => s.id === selectedShipment.id ? { ...s, status: 'Delivered' as any } : s));
-    setShowPodModal(false);
-    
     try {
       await trackingApi.submitProofOfDelivery({
         shipmentId: selectedShipment.id,
         signatureImageBase64: signatureData,
         notes: deliveryNotes
       });
+      // Update local status to Delivered only after backend success
+      setDisplayList(prev => prev.map(s => s.id === selectedShipment.id ? { ...s, status: 'Delivered' as any } : s));
+      setShowPodModal(false);
       queryClient.invalidateQueries({ queryKey: ['driver-shipments'] });
     } catch (err) {
-      console.warn("POD API call skipped for mock shipment:", err);
+      console.error("POD API call failed:", err);
     } finally {
       setIsSubmittingPod(false);
       setSelectedShipment(null);

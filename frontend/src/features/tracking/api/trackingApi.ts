@@ -15,16 +15,54 @@ export const trackingApi = {
   },
 
   submitProofOfDelivery: async (
-    _request: ProofOfDeliveryRequest
+    request: ProofOfDeliveryRequest
   ): Promise<{ success: boolean; deliveredAt: string }> => {
-    // Proof of Delivery endpoint not yet implemented on backend – returns optimistic response
-    return Promise.resolve({
+    // Calling backend to update status to Delivered instead of fake optimistic response
+    await apiClient.put(`/api/shipments/${request.shipmentId}/status`, { status: 'Delivered' });
+    return {
       success: true,
       deliveredAt: new Date().toISOString(),
-    });
+    };
   },
 
   updateShipmentStatus: async (shipmentId: string, newStatus: string): Promise<void> => {
-    await apiClient.post(`/api/tracking/${shipmentId}/status`, { status: newStatus });
+    await apiClient.put(`/api/shipments/${shipmentId}/status`, { status: newStatus });
+  },
+
+  getExceptions: async (shipmentId: string): Promise<DeliveryExceptionDto[]> => {
+    const response = await apiClient.get<DeliveryExceptionDto[]>(`/api/tracking/${shipmentId}/exceptions`);
+    return response.data;
+  },
+
+  logException: async (shipmentId: string, request: LogExceptionDto): Promise<void> => {
+    await apiClient.post(`/api/tracking/${shipmentId}/exceptions`, request);
+  },
+
+  resolveException: async (exceptionId: string): Promise<void> => {
+    await apiClient.put(`/api/tracking/exceptions/${exceptionId}/resolve`);
+  },
+
+  holdException: async (exceptionId: string): Promise<void> => {
+    await apiClient.put(`/api/tracking/exceptions/${exceptionId}/hold`);
+  },
+
+  resumeException: async (exceptionId: string): Promise<void> => {
+    await apiClient.put(`/api/tracking/exceptions/${exceptionId}/resume`);
   },
 };
+
+export interface DeliveryExceptionDto {
+  id: string;
+  type: string;
+  status: string; // 'Open', 'OnHold', 'Resolved'
+  description: string;
+  resolutionAction?: string;
+  raisedAt: string;
+  resolvedAt?: string;
+  shipmentId: string;
+}
+
+export interface LogExceptionDto {
+  type: string;
+  description: string;
+}

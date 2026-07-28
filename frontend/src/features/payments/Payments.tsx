@@ -5,10 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CreditCard, FileText, CheckCircle2, DollarSign, Clock, AlertCircle, Loader2, ArrowRight, Wallet, Receipt } from 'lucide-react';
 import { Modal } from '@/components/common/Modal';
-import { paymentApi, Invoice, PaymentRequest } from './api/paymentApi';
+import { paymentApi, Invoice, PaymentRequest, PaymentResponse } from './api/paymentApi';
 
 const paymentSchema = z.object({
-  paymentMethod: z.enum(['CreditCard', 'BankTransfer', 'Cash']),
+  paymentMethod: z.enum(['CreditCard', 'BankTransfer', 'EWallet']),
   referenceNumber: z.string().min(5, 'Reference number is required'),
 });
 
@@ -17,6 +17,7 @@ type PaymentFormValues = z.infer<typeof paymentSchema>;
 export function Payments() {
   const queryClient = useQueryClient();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [paymentResult, setPaymentResult] = useState<PaymentResponse | null>(null);
 
   const { data: invoices, isLoading: isLoadingInvoices } = useQuery({
     queryKey: ['invoices'],
@@ -34,10 +35,10 @@ export function Payments() {
 
   const paymentMutation = useMutation({
     mutationFn: (data: PaymentRequest) => paymentApi.processPayment(data),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['receipts'] });
-      setSelectedInvoice(null);
+      setPaymentResult(data);
       reset();
     }
   });
@@ -217,82 +218,109 @@ export function Payments() {
       {/* Payment Processing Modal */}
       <Modal 
         isOpen={!!selectedInvoice} 
-        onClose={() => setSelectedInvoice(null)}
+        onClose={() => { setSelectedInvoice(null); setPaymentResult(null); paymentMutation.reset(); }}
         title="Process Payment"
       >
         {selectedInvoice && (
           <div>
-            {/* Invoice Summary Card */}
-            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 mb-6 shadow-sm">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Invoice ID</span>
-                <span className="font-mono text-sm font-black text-gray-900 bg-white px-2 py-1 rounded border border-gray-100">{selectedInvoice.id}</span>
-              </div>
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</span>
-                <span className="text-sm font-bold text-gray-900">{selectedInvoice.orderId.split('-')[0]}</span>
-              </div>
-              <div className="flex justify-between items-end pt-4 border-t border-blue-200/60">
-                <span className="text-sm font-black text-gray-900">Total Amount Due</span>
-                <span className="font-black text-2xl text-blue-700">{formatCurrency(selectedInvoice.amount)}</span>
-              </div>
-            </div>
-
-            {paymentMutation.isError && (
-              <div className="mb-6 p-4 bg-red-50 text-red-700 text-sm font-semibold rounded-2xl border border-red-100 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
-                {paymentMutation.error?.message || 'Payment failed to process. Please try again.'}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-2 group">
-                <label className="text-xs font-black text-gray-500 uppercase tracking-wider">Payment Method</label>
-                <select 
-                  {...register('paymentMethod')} 
-                  className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white transition-all focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-900 cursor-pointer appearance-none"
+            {paymentResult ? (
+              <div className="flex flex-col items-center justify-center p-6 text-center animate-in zoom-in-95 duration-300">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{paymentResult.message || 'Payment Successful'}</h3>
+                <p className="text-gray-500 mb-6">Status: <span className="font-semibold text-gray-900">{paymentResult.status}</span></p>
+                <div className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 text-left">
+                   <div className="flex justify-between items-center mb-2">
+                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receipt ID</span>
+                     <span className="font-mono text-xs font-black text-gray-900">{paymentResult.receiptId}</span>
+                   </div>
+                   <div className="flex justify-between items-center">
+                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Payment ID</span>
+                     <span className="font-mono text-xs font-black text-gray-900">{paymentResult.paymentId}</span>
+                   </div>
+                </div>
+                <button 
+                  onClick={() => { setSelectedInvoice(null); setPaymentResult(null); paymentMutation.reset(); }}
+                  className="w-full py-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-all shadow-xl shadow-gray-900/20"
                 >
-                  <option value="CreditCard">Credit Card</option>
-                  <option value="BankTransfer">Bank Transfer</option>
-                  <option value="Cash">Cash / Cheque</option>
-                </select>
+                  Done
+                </button>
               </div>
+            ) : (
+              <>
+                <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 mb-6 shadow-sm">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Invoice ID</span>
+                    <span className="font-mono text-sm font-black text-gray-900 bg-white px-2 py-1 rounded border border-gray-100">{selectedInvoice.id}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</span>
+                    <span className="text-sm font-bold text-gray-900">{selectedInvoice.orderId.split('-')[0]}</span>
+                  </div>
+                  <div className="flex justify-between items-end pt-4 border-t border-blue-200/60">
+                    <span className="text-sm font-black text-gray-900">Total Amount Due</span>
+                    <span className="font-black text-2xl text-blue-700">{formatCurrency(selectedInvoice.amount)}</span>
+                  </div>
+                </div>
 
-              <div className="space-y-2 group">
-                <label className="text-xs font-black text-gray-500 uppercase tracking-wider">Reference Number <span className="text-red-400">*</span></label>
-                <input
-                  {...register('referenceNumber')}
-                  placeholder="e.g. TXN-987654321"
-                  className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white transition-all focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-900 placeholder-gray-400"
-                />
-                {errors.referenceNumber && (
-                  <p className="text-red-500 text-xs font-bold mt-1.5 animate-in fade-in">{errors.referenceNumber.message}</p>
+                {paymentMutation.isError && (
+                  <div className="mb-6 p-4 bg-red-50 text-red-700 text-sm font-semibold rounded-2xl border border-red-100 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
+                    {paymentMutation.error?.message || 'Payment failed to process. Please try again.'}
+                  </div>
                 )}
-              </div>
 
-              <div className="pt-2 flex flex-col-reverse sm:flex-row gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setSelectedInvoice(null)} 
-                  className="w-full sm:w-1/3 py-4 text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-bold transition-all"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  disabled={paymentMutation.isPending} 
-                  className="w-full sm:w-2/3 py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-xl font-bold transition-all shadow-xl shadow-gray-900/20 hover:shadow-blue-600/30 disabled:opacity-50 disabled:hover:bg-gray-900 flex items-center justify-center gap-2"
-                >
-                  {paymentMutation.isPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      Confirm Payment <CheckCircle2 className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-2 group">
+                    <label className="text-xs font-black text-gray-500 uppercase tracking-wider">Payment Method</label>
+                    <select 
+                      {...register('paymentMethod')} 
+                      className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white transition-all focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-900 cursor-pointer appearance-none"
+                    >
+                      <option value="CreditCard">Credit Card</option>
+                      <option value="BankTransfer">Bank Transfer</option>
+                      <option value="EWallet">E-Wallet</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2 group">
+                    <label className="text-xs font-black text-gray-500 uppercase tracking-wider">Reference Number <span className="text-red-400">*</span></label>
+                    <input
+                      {...register('referenceNumber')}
+                      placeholder="e.g. TXN-987654321"
+                      className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white transition-all focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-900 placeholder-gray-400"
+                    />
+                    {errors.referenceNumber && (
+                      <p className="text-red-500 text-xs font-bold mt-1.5 animate-in fade-in">{errors.referenceNumber.message}</p>
+                    )}
+                  </div>
+
+                  <div className="pt-2 flex flex-col-reverse sm:flex-row gap-3">
+                    <button 
+                      type="button" 
+                      onClick={() => { setSelectedInvoice(null); setPaymentResult(null); paymentMutation.reset(); }} 
+                      className="w-full sm:w-1/3 py-4 text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-bold transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      disabled={paymentMutation.isPending} 
+                      className="w-full sm:w-2/3 py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-xl font-bold transition-all shadow-xl shadow-gray-900/20 hover:shadow-blue-600/30 disabled:opacity-50 disabled:hover:bg-gray-900 flex items-center justify-center gap-2"
+                    >
+                      {paymentMutation.isPending ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          Confirm Payment <CheckCircle2 className="w-5 h-5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         )}
       </Modal>
