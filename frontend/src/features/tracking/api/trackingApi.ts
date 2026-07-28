@@ -38,7 +38,9 @@ export const trackingApi = {
   },
 
   resolveException: async (exceptionId: string): Promise<void> => {
-    await apiClient.put(`/api/tracking/exceptions/${exceptionId}/resolve`);
+    await apiClient.put(`/api/tracking/exceptions/${exceptionId}/resolve`, '"Resolved via UI"', {
+      headers: { 'Content-Type': 'application/json' }
+    });
   },
 
   holdException: async (exceptionId: string): Promise<void> => {

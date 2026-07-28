@@ -143,4 +143,51 @@ public class TrackingService : ITrackingService
         };
         await _trackingRepository.AddAsync(record);
     }
+
+    public async Task<IEnumerable<DeliveryExceptionDto>> GetExceptionsAsync(Guid shipmentId)
+    {
+        var shipment = await _shipmentRepository.GetByIdAsync(shipmentId);
+        if (shipment == null) throw new BusinessRuleException("Shipment not found.");
+
+        var allExceptions = await _exceptionRepository.GetAllAsync();
+        return allExceptions
+            .Where(e => e.ShipmentId == shipmentId)
+            .Select(e => new DeliveryExceptionDto
+            {
+                Id = e.Id,
+                Type = e.Type.ToString(),
+                Status = e.Status.ToString(),
+                Description = e.Description,
+                ResolutionAction = e.ResolutionAction,
+                RaisedAt = e.RaisedAt,
+                ResolvedAt = e.ResolvedAt,
+                ShipmentId = e.ShipmentId
+            })
+            .OrderByDescending(e => e.RaisedAt)
+            .ToList();
+    }
+
+    public async Task HoldExceptionAsync(Guid exceptionId)
+    {
+        var exception = await _exceptionRepository.GetByIdAsync(exceptionId);
+        if (exception == null) throw new BusinessRuleException("Exception not found.");
+
+        if (exception.Status != ExceptionStatus.Open)
+            throw new BusinessRuleException("Only Open exceptions can be put on hold.");
+
+        exception.Status = ExceptionStatus.OnHold;
+        await _exceptionRepository.UpdateAsync(exception);
+    }
+
+    public async Task ResumeExceptionAsync(Guid exceptionId)
+    {
+        var exception = await _exceptionRepository.GetByIdAsync(exceptionId);
+        if (exception == null) throw new BusinessRuleException("Exception not found.");
+
+        if (exception.Status != ExceptionStatus.OnHold)
+            throw new BusinessRuleException("Only OnHold exceptions can be resumed.");
+
+        exception.Status = ExceptionStatus.Open;
+        await _exceptionRepository.UpdateAsync(exception);
+    }
 }

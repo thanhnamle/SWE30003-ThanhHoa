@@ -88,11 +88,32 @@ public class TrackingController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>POST /api/tracking/exceptions/{exceptionId}/resolve – resolve an exception</summary>
-    [HttpPost("exceptions/{exceptionId:guid}/resolve")]
-    public async Task<IActionResult> ResolveException(Guid exceptionId, [FromBody] string resolutionNotes)
+    /// <summary>POST /api/tracking/exceptions/{exceptionId}/resolve - resolve an exception</summary>
+    [HttpPut("exceptions/{exceptionId:guid}/resolve")]
+    public async Task<IActionResult> ResolveException(Guid exceptionId, [FromBody] string? resolutionNotes)
     {
-        await _trackingService.ResolveExceptionAsync(exceptionId, resolutionNotes);
+        await _trackingService.ResolveExceptionAsync(exceptionId, resolutionNotes ?? "Resolved via UI");
+        return NoContent();
+    }
+
+    [HttpGet("{shipmentId:guid}/exceptions")]
+    public async Task<IActionResult> GetExceptions(Guid shipmentId)
+    {
+        var exceptions = await _trackingService.GetExceptionsAsync(shipmentId);
+        return Ok(exceptions);
+    }
+
+    [HttpPut("exceptions/{exceptionId:guid}/hold")]
+    public async Task<IActionResult> HoldException(Guid exceptionId)
+    {
+        await _trackingService.HoldExceptionAsync(exceptionId);
+        return NoContent();
+    }
+
+    [HttpPut("exceptions/{exceptionId:guid}/resume")]
+    public async Task<IActionResult> ResumeException(Guid exceptionId)
+    {
+        await _trackingService.ResumeExceptionAsync(exceptionId);
         return NoContent();
     }
 

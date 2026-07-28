@@ -39,7 +39,7 @@ public class ShipmentServiceTests
         _pickupDeliveryOptionRepoMock = new Mock<IRepository<PickupDeliveryOption>>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
-        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync()).ReturnsAsync(new Mock<IDisposable>().Object);
 
         _shipmentService = new ShipmentService(
             _shipmentRepoMock.Object,
