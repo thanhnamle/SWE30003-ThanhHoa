@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartFM.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SmartFM.Infrastructure.Persistence;
 namespace SmartFM.Infrastructure.Migrations
 {
     [DbContext(typeof(SmartFmDbContext))]
-    partial class SmartFmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728150633_FixCascadeDeleteBehaviour")]
+    partial class FixCascadeDeleteBehaviour
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,9 +216,6 @@ namespace SmartFM.Infrastructure.Migrations
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("ResolvedByUserId")
-                        .HasColumnType("char(36)");
-
                     b.Property<Guid>("ShipmentId")
                         .HasColumnType("char(36)");
 
@@ -229,7 +229,7 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("ShipmentId");
 
-                    b.ToTable("DeliveryException");
+                    b.ToTable("DeliveryExceptions");
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Driver", b =>
@@ -265,13 +265,7 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.HasIndex("IsOnLeave")
-                        .HasDatabaseName("IX_Driver_IsOnLeave");
-
-                    b.ToTable("Drivers", t =>
-                        {
-                            t.HasCheckConstraint("CK_Driver_MaxWeeklyHours", "`MaxWeeklyHours` >= 1 AND `MaxWeeklyHours` <= 168");
-                        });
+                    b.ToTable("Drivers");
 
                     b.HasData(
                         new
@@ -313,11 +307,10 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DriverId");
+
                     b.HasIndex("ShipmentId")
                         .IsUnique();
-
-                    b.HasIndex("DriverId", "Status")
-                        .HasDatabaseName("IX_DriverAssignment_DriverId_Status");
 
                     b.ToTable("DriverAssignments");
                 });
@@ -467,36 +460,6 @@ namespace SmartFM.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("PickupDeliveryOptions");
-                });
-
-            modelBuilder.Entity("SmartFM.Domain.Entities.ProofOfDelivery", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ProofImageUrl")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ReceivedByName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("RecordedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid>("ShipmentId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShipmentId")
-                        .IsUnique();
-
-                    b.ToTable("ProofOfDelivery");
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Receipt", b =>
@@ -668,9 +631,6 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.HasIndex("IsUnderMaintenance")
-                        .HasDatabaseName("IX_Vehicle_IsUnderMaintenance");
-
                     b.ToTable("Vehicles");
 
                     b.HasData(
@@ -713,8 +673,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasIndex("ShipmentId")
                         .IsUnique();
 
-                    b.HasIndex("VehicleId", "Status")
-                        .HasDatabaseName("IX_VehicleAssignment_VehicleId_Status");
+                    b.HasIndex("VehicleId");
 
                     b.ToTable("VehicleAssignments");
                 });
@@ -814,17 +773,6 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.Shipment", "Shipment")
                         .WithOne("PickupDeliveryOption")
                         .HasForeignKey("SmartFM.Domain.Entities.PickupDeliveryOption", "ShipmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Shipment");
-                });
-
-            modelBuilder.Entity("SmartFM.Domain.Entities.ProofOfDelivery", b =>
-                {
-                    b.HasOne("SmartFM.Domain.Entities.Shipment", "Shipment")
-                        .WithOne("ProofOfDelivery")
-                        .HasForeignKey("SmartFM.Domain.Entities.ProofOfDelivery", "ShipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -937,8 +885,6 @@ namespace SmartFM.Infrastructure.Migrations
                     b.Navigation("DriverAssignment");
 
                     b.Navigation("PickupDeliveryOption");
-
-                    b.Navigation("ProofOfDelivery");
 
                     b.Navigation("TrackingRecords");
 

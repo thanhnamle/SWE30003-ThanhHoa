@@ -12,7 +12,16 @@ public class DeliveryException
 
     public DateTime RaisedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }
+    public Guid? ResolvedByUserId { get; private set; }
 
     public Guid ShipmentId { get; set; }
     public Shipment Shipment { get; set; } = null!;
+
+    public void Resolve(string resolutionAction, Guid resolvedByUserId)
+    {
+        ResolutionAction = resolutionAction;
+        ResolvedByUserId = resolvedByUserId;
+        ResolvedAt = DateTime.UtcNow;
+        Status = ExceptionStatus.Resolved;
+    }
 }

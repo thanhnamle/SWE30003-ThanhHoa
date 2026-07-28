@@ -17,6 +17,7 @@ public class Shipment
     public VehicleAssignment? VehicleAssignment { get; set; }
     public DriverAssignment? DriverAssignment { get; set; }
     public PickupDeliveryOption? PickupDeliveryOption { get; set; }
+    public ProofOfDelivery? ProofOfDelivery { get; private set; }
     public ICollection<TrackingRecord> TrackingRecords { get; set; } = new List<TrackingRecord>();
     public ICollection<DeliveryException> DeliveryExceptions { get; set; } = new List<DeliveryException>();
 }
