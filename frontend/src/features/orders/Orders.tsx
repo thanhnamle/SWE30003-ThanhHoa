@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Package, Truck, Info, CheckCircle2, AlertCircle, ChevronRight, Loader2, Sparkles } from 'lucide-react';
+import { Package, Truck, Info, CheckCircle2, AlertCircle, ChevronRight, Loader2, Sparkles, Edit2, XCircle, FileText } from 'lucide-react';
+import { format } from 'date-fns';
 import { orderApi, TransportOffering } from './api/orderApi';
 
 const orderSchema = z.object({
@@ -29,6 +30,10 @@ const getServiceDescription = (category: string) => {
 
 export function Orders() {
   const [selectedOffering, setSelectedOffering] = useState<TransportOffering | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
 
   // Fetch Offerings
   const { data: offerings, isLoading: isLoadingOfferings } = useQuery({
@@ -42,7 +47,11 @@ export function Orders() {
     queryFn: orderApi.getCustomers
   });
 
-  const queryClient = useQueryClient();
+  const { data: orders, isLoading: isLoadingOrders } = useQuery({
+    queryKey: ['orders'],
+    queryFn: orderApi.getOrders
+  });
+
   const { register, handleSubmit, setValue, setError, reset, formState: { errors } } = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
@@ -54,7 +63,28 @@ export function Orders() {
     mutationFn: orderApi.createOrder,
     onSuccess: () => {
       setSelectedOffering(null);
+      reset();
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  const editMutation = useMutation({
+    mutationFn: (data: { id: string; payload: any }) => orderApi.editOrder(data.id, data.payload),
+    onSuccess: () => {
+      setSelectedOffering(null);
+      setIsEditMode(false);
+      setEditingOrderId(null);
+      reset();
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: orderApi.cancelOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     }
   });
 
@@ -67,11 +97,43 @@ export function Orders() {
       return;
     }
 
-    orderMutation.mutate({
+    const payload = {
       ...data,
       specialHandlingNotes: data.specialHandlingNotes ?? '',
-    });
+    };
+
+    if (isEditMode && editingOrderId) {
+      editMutation.mutate({ id: editingOrderId, payload });
+    } else {
+      orderMutation.mutate(payload);
+    }
   };
+
+  const handleEditClick = (order: any) => {
+    setIsEditMode(true);
+    setEditingOrderId(order.id);
+    
+    setValue('customerId', order.customerId);
+    setValue('cargoWeightKg', order.cargoWeightKg);
+    setValue('cargoVolumeM3', order.cargoVolumeM3);
+    setValue('specialHandlingNotes', order.specialHandlingNotes || '');
+    setValue('transportOfferingId', order.transportOfferingId);
+    setValue('branchId', order.branchId || '11111111-1111-1111-1111-111111111111');
+
+    const offering = offerings?.find(o => o.id === order.transportOfferingId);
+    if (offering) setSelectedOffering(offering);
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelForm = () => {
+    setIsEditMode(false);
+    setEditingOrderId(null);
+    setSelectedOffering(null);
+    reset();
+  };
+
+  const currentMutation = isEditMode ? editMutation : orderMutation;
 
   const handleSelectOffering = (offering: TransportOffering) => {
     setSelectedOffering(offering);
@@ -87,7 +149,7 @@ export function Orders() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-semibold uppercase tracking-wider mb-4">
-              <Sparkles className="w-3.5 h-3.5" /> New Shipment
+              <Sparkles className="w-3.5 h-3.5" /> {isEditMode ? 'Edit Shipment' : 'New Shipment'}
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">
               Create Transport Order
@@ -100,7 +162,7 @@ export function Orders() {
       </div>
 
       {/* Success State */}
-      <div className={`transition-all duration-700 ease-in-out transform ${orderMutation.isSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8 absolute pointer-events-none'}`}>
+      <div className={`transition-all duration-700 ease-in-out transform ${currentMutation.isSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8 absolute pointer-events-none'}`}>
         <div className="bg-gradient-to-r from-green-50 to-emerald-50/50 backdrop-blur-xl border border-green-200/60 p-6 md:p-8 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-start gap-5">
             <div className="p-3 bg-green-100 rounded-full shadow-inner shadow-green-200/50">
@@ -114,7 +176,7 @@ export function Orders() {
             </div>
           </div>
           <button 
-            onClick={() => orderMutation.reset()}
+            onClick={() => currentMutation.reset()}
             className="whitespace-nowrap px-6 py-3 bg-white border border-green-200 text-green-700 rounded-xl hover:bg-green-60 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-sm font-semibold focus:ring-4 focus:ring-green-500/20"
           >
             Create Another Order
@@ -122,7 +184,7 @@ export function Orders() {
         </div>
       </div>
 
-      <div className={`space-y-12 transition-all duration-500 ${orderMutation.isSuccess ? 'opacity-40 pointer-events-none grayscale-[30%]' : 'opacity-100'}`}>
+      <div className={`space-y-12 transition-all duration-500 ${currentMutation.isSuccess ? 'opacity-40 pointer-events-none grayscale-[30%]' : 'opacity-100'}`}>
         
         {/* Step 1: Offerings Catalog */}
         <div className="space-y-6">
@@ -204,12 +266,12 @@ export function Orders() {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="relative bg-white border border-gray-200/60 rounded-[2rem] p-8 md:p-10 shadow-xl shadow-gray-200/40">
-            {orderMutation.isError && (
+            {currentMutation.isError && (
               <div className="mb-8 p-5 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4">
                 <AlertCircle className="w-6 h-6 text-red-600 shrink-0" />
                 <div>
                   <h4 className="font-bold text-red-900">Submission Failed</h4>
-                  <p className="text-sm text-red-700 mt-1">{orderMutation.error?.message || 'We could not process your order at this time.'}</p>
+                  <p className="text-sm text-red-700 mt-1">{currentMutation.error?.message || 'We could not process your request at this time.'}</p>
                 </div>
               </div>
             )}
@@ -299,27 +361,24 @@ export function Orders() {
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button 
                   type="button"
-                  onClick={() => {
-                    setSelectedOffering(null);
-                    reset();
-                  }}
+                  onClick={handleCancelForm}
                   className="w-full sm:w-auto px-6 py-4 border-2 border-gray-200 hover:bg-gray-100 hover:border-gray-300 text-gray-700 rounded-2xl font-bold transition-all duration-300 shadow-sm text-sm"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  disabled={orderMutation.isPending || !selectedOffering}
+                  disabled={currentMutation.isPending || !selectedOffering}
                   className="group relative w-full sm:w-auto flex justify-center items-center gap-3 px-10 py-4 bg-gray-900 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-2xl font-bold transition-all duration-300 shadow-xl shadow-gray-900/20 hover:shadow-blue-600/30 disabled:shadow-none hover:-translate-y-1 disabled:translate-y-0 disabled:cursor-not-allowed overflow-hidden"
                 >
-                  {orderMutation.isPending ? (
+                  {currentMutation.isPending ? (
                     <>
                       <Loader2 className="w-6 h-6 animate-spin" />
                       Processing Order...
                     </>
                   ) : (
                     <>
-                      Confirm & Submit Order
+                      {isEditMode ? 'Save Changes' : 'Confirm & Submit Order'}
                       <ChevronRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-300" />
                     </>
                   )}
@@ -329,6 +388,70 @@ export function Orders() {
           </form>
         </div>
       </div>
+
+      {/* Recent Orders Section */}
+      <div className="bg-white rounded-3xl border border-gray-200/60 p-8 shadow-xl shadow-gray-200/40 mt-12">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+            <FileText className="w-6 h-6" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">My Recent Orders</h2>
+        </div>
+        
+        {isLoadingOrders ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
+        ) : orders?.length === 0 ? (
+          <div className="text-center py-12">
+            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium">No orders found.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-5 py-4 text-sm font-bold text-gray-600 rounded-l-xl">Order ID</th>
+                  <th className="px-5 py-4 text-sm font-bold text-gray-600">Customer</th>
+                  <th className="px-5 py-4 text-sm font-bold text-gray-600">Service Level</th>
+                  <th className="px-5 py-4 text-sm font-bold text-gray-600">Status</th>
+                  <th className="px-5 py-4 text-sm font-bold text-gray-600">Weight</th>
+                  <th className="px-5 py-4 text-sm font-bold text-gray-600">Date</th>
+                  <th className="px-5 py-4 text-sm font-bold text-gray-600 rounded-r-xl">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {orders?.map(order => (
+                  <tr key={order.id} className="hover:bg-gray-50/50">
+                    <td className="px-5 py-4 text-sm text-gray-600 font-bold uppercase">{order.id.split('-')[0]}</td>
+                    <td className="px-5 py-4 text-sm text-gray-600 font-medium">
+                      {customers?.find(c => c.id === order.customerId)?.fullName || customers?.find(c => c.id === order.customerId)?.name || customers?.find(c => c.id === order.customerId)?.companyName || 'Unknown Customer'}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-600">
+                      {offerings?.find(o => o.id === order.transportOfferingId)?.category || 'Unknown'}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`px-2.5 py-1 text-xs font-bold rounded-lg ${order.status === 'Pending' ? 'bg-amber-100 text-amber-700' : order.status === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-600">{order.cargoWeightKg} kg</td>
+                    <td className="px-5 py-4 text-sm text-gray-600">{format(new Date(order.createdAt), 'PP')}</td>
+                    <td className="px-5 py-4">
+                      {order.status === 'Pending' && (
+                        <div className="flex gap-2">
+                          <button onClick={() => handleEditClick(order)} className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
+                          <button onClick={() => cancelMutation.mutate(order.id)} disabled={cancelMutation.isPending} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"><XCircle className="w-4 h-4" /></button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

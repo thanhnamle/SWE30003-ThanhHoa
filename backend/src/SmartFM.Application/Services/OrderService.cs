@@ -101,7 +101,7 @@ public class OrderService : IOrderService
             CargoVolumeM3 = order.CargoVolumeM3,
             SpecialHandlingNotes = order.SpecialHandlingNotes,
             Status = order.Status,
-            CreatedAt = order.CreatedAt
+            CreatedAt = order.CreatedAt, CustomerId = order.CustomerId, BranchId = order.BranchId, TransportOfferingId = order.TransportOfferingId
         };
     }
 
@@ -139,7 +139,7 @@ public class OrderService : IOrderService
             CargoVolumeM3 = order.CargoVolumeM3,
             SpecialHandlingNotes = order.SpecialHandlingNotes,
             Status = order.Status,
-            CreatedAt = order.CreatedAt
+            CreatedAt = order.CreatedAt, CustomerId = order.CustomerId, BranchId = order.BranchId, TransportOfferingId = order.TransportOfferingId
         };
     }
 

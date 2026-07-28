@@ -228,8 +228,7 @@ export function Payments() {
                 <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{paymentResult.message || 'Payment Successful'}</h3>
-                <p className="text-gray-500 mb-6">Status: <span className="font-semibold text-gray-900">{paymentResult.status}</span></p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">{paymentResult.message || 'Payment Successful'}</h3>
                 <div className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 text-left">
                    <div className="flex justify-between items-center mb-2">
                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receipt ID</span>

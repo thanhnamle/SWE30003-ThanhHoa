@@ -304,7 +304,7 @@ export function Dashboard() {
             <div className="sfm-card sfm-enter lg:col-span-2 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm" style={{ animationDelay: '0.56s' }}>
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-gray-900 text-base">Recent orders</h3>
-                <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">View all</button>
+                <button onClick={() => navigate('/shipments')} className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">View all</button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
