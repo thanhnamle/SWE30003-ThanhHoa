@@ -17,12 +17,11 @@ export const trackingApi = {
   submitProofOfDelivery: async (
     request: ProofOfDeliveryRequest
   ): Promise<{ success: boolean; deliveredAt: string }> => {
-    // Calling backend to update status to Delivered instead of fake optimistic response
-    await apiClient.put(`/api/shipments/${request.shipmentId}/status`, { status: 'Delivered' });
-    return {
-      success: true,
-      deliveredAt: new Date().toISOString(),
-    };
+    const response = await apiClient.post<{ success: boolean; deliveredAt: string }>(
+      `/api/tracking/${request.shipmentId}/pod`,
+      request
+    );
+    return response.data;
   },
 
   updateShipmentStatus: async (shipmentId: string, newStatus: string): Promise<void> => {

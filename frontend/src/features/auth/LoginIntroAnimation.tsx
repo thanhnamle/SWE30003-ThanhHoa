@@ -24,7 +24,7 @@ const STAGES = [
 
 const DURATION_MS = 4200;
 
-export function LoginIntroAnimation({ onFinish }: { onFinish: () => void }) {
+export function LoginIntroAnimation({ onFinish, onCancel }: { onFinish: () => void; onCancel: () => void }) {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [truck, setTruck] = useState({ x: 0, y: 0, angle: 0 });
@@ -259,7 +259,7 @@ export function LoginIntroAnimation({ onFinish }: { onFinish: () => void }) {
           </div>
 
           <button 
-            onClick={onFinish}
+            onClick={onCancel}
             className="px-4 py-1.5 text-xs font-semibold text-blue-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 shadow-sm"
           >
             Cancel

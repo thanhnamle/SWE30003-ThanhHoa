@@ -39,7 +39,7 @@ public class PaymentServiceTests
     [Theory]
     [InlineData(PaymentMethod.CreditCard)]
     [InlineData(PaymentMethod.BankTransfer)]
-    [InlineData(PaymentMethod.EWallet)]
+    [InlineData(PaymentMethod.Cash)]
     public async Task ProcessPaymentAsync_AllPaymentMethods_ShouldSucceed_AndGenerateReceipt(PaymentMethod method)
     {
         var invoiceId = Guid.NewGuid();
@@ -56,8 +56,8 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(invoiceId, dto);
 
         result.Should().NotBeNull();
-        result.Status.Should().Be(PaymentStatus.Success);
-        result.Message.Should().Be("Payment successful and receipt generated!");
+        result.Id.Should().NotBeEmpty();
+        result.PaymentId.Should().NotBeEmpty();
 
         _paymentRepoMock.Verify(r => r.AddAsync(It.Is<Payment>(p => p.Amount == 1200m && p.Method == method && p.Status == PaymentStatus.Success)), Times.Once);
         _receiptRepoMock.Verify(r => r.AddAsync(It.Is<Receipt>(rc => rc.SettledAmount == 1200m)), Times.Once);
@@ -119,7 +119,7 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(invoiceId, dto);
 
         result.Should().NotBeNull();
-        result.Status.Should().Be(PaymentStatus.Success);
+        result.Id.Should().NotBeEmpty();
         _invoiceRepoMock.Verify(r => r.UpdateAsync(It.Is<Invoice>(i => i.Status == InvoiceStatus.Paid)), Times.Once);
     }
 }

@@ -45,7 +45,7 @@ public class EnumCoverageTests
     [Theory]
     [InlineData(PaymentMethod.CreditCard, 0)]
     [InlineData(PaymentMethod.BankTransfer, 1)]
-    [InlineData(PaymentMethod.EWallet, 2)]
+    [InlineData(PaymentMethod.Cash, 2)]
     public void PaymentMethod_EnumValues_ShouldBeDefined(PaymentMethod method, int expectedValue)
     {
         ((int)method).Should().Be(expectedValue);

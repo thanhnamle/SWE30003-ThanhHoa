@@ -19,29 +19,37 @@ namespace SmartFM.UnitTests.Services;
 public class ShipmentServiceTests
 {
     private readonly Mock<IRepository<Shipment>> _shipmentRepoMock;
+    private readonly Mock<IRepository<Order>> _orderRepoMock;
     private readonly Mock<IRepository<Vehicle>> _vehicleRepoMock;
     private readonly Mock<IRepository<Driver>> _driverRepoMock;
-    private readonly Mock<IRepository<VehicleAssignment>> _vehicleAssignRepoMock;
-    private readonly Mock<IRepository<DriverAssignment>> _driverAssignRepoMock;
+    private readonly Mock<IRepository<VehicleAssignment>> _vehicleAssignmentRepoMock;
+    private readonly Mock<IRepository<DriverAssignment>> _driverAssignmentRepoMock;
     private readonly Mock<IRepository<PickupDeliveryOption>> _pickupDeliveryOptionRepoMock;
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly ShipmentService _shipmentService;
 
     public ShipmentServiceTests()
     {
         _shipmentRepoMock = new Mock<IRepository<Shipment>>();
+        _orderRepoMock = new Mock<IRepository<Order>>();
         _vehicleRepoMock = new Mock<IRepository<Vehicle>>();
         _driverRepoMock = new Mock<IRepository<Driver>>();
-        _vehicleAssignRepoMock = new Mock<IRepository<VehicleAssignment>>();
-        _driverAssignRepoMock = new Mock<IRepository<DriverAssignment>>();
+        _vehicleAssignmentRepoMock = new Mock<IRepository<VehicleAssignment>>();
+        _driverAssignmentRepoMock = new Mock<IRepository<DriverAssignment>>();
         _pickupDeliveryOptionRepoMock = new Mock<IRepository<PickupDeliveryOption>>();
+        _unitOfWorkMock = new Mock<IUnitOfWork>();
+
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
 
         _shipmentService = new ShipmentService(
             _shipmentRepoMock.Object,
+            _orderRepoMock.Object,
             _vehicleRepoMock.Object,
             _driverRepoMock.Object,
-            _vehicleAssignRepoMock.Object,
-            _driverAssignRepoMock.Object,
-            _pickupDeliveryOptionRepoMock.Object
+            _vehicleAssignmentRepoMock.Object,
+            _driverAssignmentRepoMock.Object,
+            _pickupDeliveryOptionRepoMock.Object,
+            _unitOfWorkMock.Object
         );
     }
 
@@ -73,8 +81,8 @@ public class ShipmentServiceTests
         result.Status.Should().Be(ShipmentStatus.ReadyForPickup);
         result.Message.Should().Be("Resources assigned successfully!");
 
-        _vehicleAssignRepoMock.Verify(r => r.AddAsync(It.Is<VehicleAssignment>(va => va.VehicleId == vehicleId)), Times.Once);
-        _driverAssignRepoMock.Verify(r => r.AddAsync(It.Is<DriverAssignment>(da => da.DriverId == driverId)), Times.Once);
+        _vehicleAssignmentRepoMock.Verify(r => r.AddAsync(It.Is<VehicleAssignment>(va => va.VehicleId == vehicleId)), Times.Once);
+        _driverAssignmentRepoMock.Verify(r => r.AddAsync(It.Is<DriverAssignment>(da => da.DriverId == driverId)), Times.Once);
         _shipmentRepoMock.Verify(r => r.UpdateAsync(It.Is<Shipment>(s => s.Status == ShipmentStatus.ReadyForPickup)), Times.Once);
     }
 

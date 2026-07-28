@@ -42,12 +42,10 @@ public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program
 
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"Response content: {content}");
 
-        var result = await response.Content.ReadFromJsonAsync<PaymentResponseDto>(JsonOptions);
-        result.Should().NotBeNull();
-        result!.Status.Should().Be(PaymentStatus.Success);
-        result.Message.Should().Be("Payment successful and receipt generated!");
-        result.PaymentId.Should().NotBeEmpty();
-        result.ReceiptId.Should().NotBeEmpty();
+        var paymentResult = await response.Content.ReadFromJsonAsync<ReceiptResponseDto>();
+        paymentResult.Should().NotBeNull();
+        paymentResult!.TransactionReference.Should().NotBeNullOrWhiteSpace();
+        paymentResult.SettledAmount.Should().Be(500m);
     }
 
     [Fact]
@@ -70,7 +68,7 @@ public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program
         var request = new ProcessPaymentDto
         {
             Amount = 300m,
-            Method = PaymentMethod.EWallet
+            Method = PaymentMethod.Cash
         };
 
         var response = await _client.PostAsJsonAsync($"/api/payments/invoice/{TestDataSeeder.InvoicePaidId}", request);

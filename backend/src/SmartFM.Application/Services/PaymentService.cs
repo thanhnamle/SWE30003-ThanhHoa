@@ -25,7 +25,7 @@ public class PaymentService : IPaymentService
         _receiptRepository = receiptRepository;
     }
 
-    public async Task<PaymentResponseDto> ProcessPaymentAsync(Guid invoiceId, ProcessPaymentDto request)
+    public async Task<ReceiptResponseDto> ProcessPaymentAsync(Guid invoiceId, ProcessPaymentDto request)
     {
         var invoice = await _invoiceRepository.GetByIdAsync(invoiceId);
 
@@ -65,12 +65,13 @@ public class PaymentService : IPaymentService
         invoice.Status = InvoiceStatus.Paid;
         await _invoiceRepository.UpdateAsync(invoice);
 
-        return new PaymentResponseDto
+        return new ReceiptResponseDto
         {
+            Id = receipt.Id,
             PaymentId = payment.Id,
-            ReceiptId = receipt.Id,
-            Status = PaymentStatus.Success,
-            Message = "Payment successful and receipt generated!"
+            SettledAmount = receipt.SettledAmount,
+            TransactionReference = receipt.TransactionReference,
+            IssuedAt = receipt.IssuedAt
         };
     }
 }

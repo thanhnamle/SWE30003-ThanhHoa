@@ -60,4 +60,28 @@ public class OrdersController : ControllerBase
         var result = await _orderService.PlaceOrderAsync(request);
         return CreatedAtAction(nameof(GetOrder), new { id = result.Id }, result);
     }
+
+    /// <summary>PUT /api/orders/{id} – edit an existing order</summary>
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> EditOrder(Guid id, [FromBody] CreateOrderDto request)
+    {
+        var result = await _orderService.EditOrderAsync(id, request);
+        return Ok(result);
+    }
+
+    /// <summary>POST /api/orders/{id}/approve – approve an order</summary>
+    [HttpPost("{id:guid}/approve")]
+    public async Task<IActionResult> ApproveOrder(Guid id)
+    {
+        await _orderService.ApproveOrderAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>POST /api/orders/{id}/cancel – cancel an order</summary>
+    [HttpPost("{id:guid}/cancel")]
+    public async Task<IActionResult> CancelOrder(Guid id)
+    {
+        await _orderService.CancelOrderAsync(id);
+        return NoContent();
+    }
 }
