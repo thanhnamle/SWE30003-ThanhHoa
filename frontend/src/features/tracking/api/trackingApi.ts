@@ -15,13 +15,13 @@ export const trackingApi = {
   },
 
   submitProofOfDelivery: async (
-    _request: ProofOfDeliveryRequest
+    request: ProofOfDeliveryRequest
   ): Promise<{ success: boolean; deliveredAt: string }> => {
-    // Proof of Delivery endpoint not yet implemented on backend – returns optimistic response
-    return Promise.resolve({
-      success: true,
-      deliveredAt: new Date().toISOString(),
-    });
+    const response = await apiClient.post<{ success: boolean; deliveredAt: string }>(
+      `/api/tracking/${request.shipmentId}/pod`,
+      request
+    );
+    return response.data;
   },
 
   updateShipmentStatus: async (shipmentId: string, newStatus: string): Promise<void> => {

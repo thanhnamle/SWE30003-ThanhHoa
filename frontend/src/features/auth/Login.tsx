@@ -38,7 +38,7 @@ const FEATURES = [
 ];
 
 export function Login() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -81,9 +81,15 @@ export function Login() {
     navigate(target, { replace: true });
   };
 
+  // Hàm xử lý nếu user bấm Cancel trong lúc xem intro
+  const handleCancelIntro = () => {
+    logout(); // Hủy đăng nhập
+    setShowIntro(false);
+  };
+
   // Nếu showIntro = true, hiển thị màn hình xe tải chạy
   if (showIntro) {
-    return <LoginIntroAnimation onFinish={handleAnimationFinish} />;
+    return <LoginIntroAnimation onFinish={handleAnimationFinish} onCancel={handleCancelIntro} />;
   }
 
   return (

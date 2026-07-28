@@ -20,6 +20,8 @@ public class OrderServiceExtendedTests
 {
     private readonly Mock<IRepository<Order>> _orderRepoMock;
     private readonly Mock<IRepository<TransportOffering>> _offeringRepoMock;
+    private readonly Mock<IRepository<Customer>> _customerRepoMock;
+    private readonly Mock<IRepository<Branch>> _branchRepoMock;
     private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly OrderService _orderService;
 
@@ -27,12 +29,26 @@ public class OrderServiceExtendedTests
     {
         _orderRepoMock = new Mock<IRepository<Order>>();
         _offeringRepoMock = new Mock<IRepository<TransportOffering>>();
+        _customerRepoMock = new Mock<IRepository<Customer>>();
+        _branchRepoMock = new Mock<IRepository<Branch>>();
         _notificationServiceMock = new Mock<INotificationService>();
 
         _offeringRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new TransportOffering { BaseFee = 500000, FeePerKm = 15000, IsActive = true });
+            .ReturnsAsync(new TransportOffering { BaseFee = 500000, FeePerKm = 15000, IsActive = true, MaxCapacityKg = 100000m });
 
-        _orderService = new OrderService(_orderRepoMock.Object, _offeringRepoMock.Object, _notificationServiceMock.Object);
+        _customerRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new Customer { Id = Guid.NewGuid(), Name = "Test Customer" });
+
+        _branchRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new Branch { Id = Guid.NewGuid(), Name = "Test Branch" });
+
+        _orderService = new OrderService(
+            _orderRepoMock.Object,
+            _offeringRepoMock.Object,
+            _customerRepoMock.Object,
+            _branchRepoMock.Object,
+            _notificationServiceMock.Object
+        );
     }
 
     [Theory]
