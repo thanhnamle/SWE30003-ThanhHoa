@@ -32,6 +32,7 @@ public class ShipmentsController : ControllerBase
             .Include(s => s.Order!).ThenInclude(o => o.Customer)
             .Include(s => s.Order!).ThenInclude(o => o.TransportOffering)
             .Include(s => s.PickupDeliveryOption)
+            .Where(s => s.Order == null || s.Order.Status != OrderStatus.Cancelled)
             .ToListAsync();
 
         var result = shipments.Select(s => new ShipmentResponseDto

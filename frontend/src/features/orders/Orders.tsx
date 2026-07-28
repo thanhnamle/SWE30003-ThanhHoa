@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Package, Truck, Info, CheckCircle2, AlertCircle, ChevronRight, Loader2, Sparkles, Edit2, XCircle, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { orderApi, TransportOffering } from './api/orderApi';
+import { shipmentApi } from '../shipments/api/shipmentApi';
 
 const orderSchema = z.object({
   cargoWeightKg: z.number().min(1, 'Weight must be at least 1kg').max(20000, 'Exceeds maximum fleet capacity'),
@@ -50,6 +51,11 @@ export function Orders() {
   const { data: orders, isLoading: isLoadingOrders } = useQuery({
     queryKey: ['orders'],
     queryFn: orderApi.getOrders
+  });
+
+  const { data: shipments } = useQuery({
+    queryKey: ['shipments'],
+    queryFn: shipmentApi.getShipments
   });
 
   const { register, handleSubmit, setValue, setError, reset, formState: { errors } } = useForm<OrderFormValues>({
@@ -109,7 +115,11 @@ export function Orders() {
     }
   };
 
+  const formRef = useRef<HTMLDivElement>(null);
+
   const handleEditClick = (order: any) => {
+    orderMutation.reset();
+    editMutation.reset();
     setIsEditMode(true);
     setEditingOrderId(order.id);
     
@@ -123,7 +133,11 @@ export function Orders() {
     const offering = offerings?.find(o => o.id === order.transportOfferingId);
     if (offering) setSelectedOffering(offering);
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleCancelForm = () => {
@@ -162,29 +176,31 @@ export function Orders() {
       </div>
 
       {/* Success State */}
-      <div className={`transition-all duration-700 ease-in-out transform ${currentMutation.isSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8 absolute pointer-events-none'}`}>
+      <div className={`transition-all duration-700 ease-in-out transform ${(orderMutation.isSuccess || editMutation.isSuccess) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8 absolute pointer-events-none'}`}>
         <div className="bg-gradient-to-r from-green-50 to-emerald-50/50 backdrop-blur-xl border border-green-200/60 p-6 md:p-8 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-start gap-5">
             <div className="p-3 bg-green-100 rounded-full shadow-inner shadow-green-200/50">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-green-900">Order Successfully Placed!</h3>
+              <h3 className="text-xl font-bold text-green-900">{editMutation.isSuccess ? 'Order Successfully Updated!' : 'Order Successfully Placed!'}</h3>
               <p className="text-green-700 mt-1.5 leading-relaxed max-w-2xl">
-                Your order has been sent to the branch for operational validation. You can track its progress in the Shipments dashboard once approved.
+                {editMutation.isSuccess 
+                  ? 'Your changes have been saved successfully.' 
+                  : 'Your order has been sent to the branch for operational validation. You can track its progress in the Shipments dashboard once approved.'}
               </p>
             </div>
           </div>
           <button 
-            onClick={() => currentMutation.reset()}
+            onClick={() => { orderMutation.reset(); editMutation.reset(); handleCancelForm(); }}
             className="whitespace-nowrap px-6 py-3 bg-white border border-green-200 text-green-700 rounded-xl hover:bg-green-60 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-sm font-semibold focus:ring-4 focus:ring-green-500/20"
           >
-            Create Another Order
+            {editMutation.isSuccess ? 'Dismiss' : 'Create Another Order'}
           </button>
         </div>
       </div>
 
-      <div className={`space-y-12 transition-all duration-500 ${currentMutation.isSuccess ? 'opacity-40 pointer-events-none grayscale-[30%]' : 'opacity-100'}`}>
+      <div ref={formRef} className={`space-y-12 transition-all duration-500 ${(orderMutation.isSuccess || editMutation.isSuccess) ? 'opacity-40 pointer-events-none grayscale-[30%]' : 'opacity-100'}`}>
         
         {/* Step 1: Offerings Catalog */}
         <div className="space-y-6">
@@ -437,7 +453,7 @@ export function Orders() {
                     <td className="px-5 py-4 text-sm text-gray-600">{order.cargoWeightKg} kg</td>
                     <td className="px-5 py-4 text-sm text-gray-600">{format(new Date(order.createdAt), 'PP')}</td>
                     <td className="px-5 py-4">
-                      {order.status === 'Pending' && (
+                      {order.status === 'Pending' && !shipments?.some(s => s.orderId === order.id && s.status !== 'Preparing') && (
                         <div className="flex gap-2">
                           <button onClick={() => handleEditClick(order)} className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
                           <button onClick={() => cancelMutation.mutate(order.id)} disabled={cancelMutation.isPending} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"><XCircle className="w-4 h-4" /></button>

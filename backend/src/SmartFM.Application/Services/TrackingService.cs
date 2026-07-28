@@ -128,9 +128,8 @@ public class TrackingService : ITrackingService
         var order = await _orderRepository.GetByIdAsync(shipment.OrderId);
         if (order != null)
         {
-            // The order itself is completed or validated further
-            // For now, we update it to 'Completed' (Wait, OrderStatus only has Pending, Validated, Cancelled).
-            // Let's just leave OrderStatus alone, Invoice tracks payment.
+            order.Status = OrderStatus.Validated;
+            await _orderRepository.UpdateAsync(order);
         }
 
         var record = new TrackingRecord

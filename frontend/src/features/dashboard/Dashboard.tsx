@@ -36,11 +36,11 @@ export function Dashboard() {
       const sortedShipments = [...shipments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
       const orders = sortedShipments.map(s => {
         const inv = invoices.find(i => i.orderId === s.orderId);
-        const origin = s.pickupDeliveryOption?.pickupAddress || 'Unknown';
-        const destination = s.pickupDeliveryOption?.deliveryAddress || 'Unknown';
+        const origin = s.pickupDeliveryOption?.pickupAddress?.split(',')[0] || 'Unknown';
+        const destination = s.pickupDeliveryOption?.deliveryAddress?.split(',')[0] || 'Unknown';
         return {
           id: s.id.split('-')[0].toUpperCase(),
-          customer: s.orderId.split('-')[0].toUpperCase(),
+          customer: s.order?.customerName || 'Unknown Customer',
           route: origin + ' → ' + destination,
           status: s.status,
           amount: inv ? inv.amount : 0
@@ -304,7 +304,7 @@ export function Dashboard() {
             <div className="sfm-card sfm-enter lg:col-span-2 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm" style={{ animationDelay: '0.56s' }}>
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-gray-900 text-base">Recent orders</h3>
-                <button onClick={() => navigate('/shipments')} className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">View all</button>
+                <button onClick={() => navigate('/dashboard/shipments')} className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">View all</button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">

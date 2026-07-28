@@ -121,6 +121,18 @@ export function Shipments() {
       }
     }
 
+    // Validate Active Assignment Conflicts
+    const activeShipments = shipments?.filter(s => s.status !== 'Delivered' && s.id !== selectedShipment.id) || [];
+      
+    const vehicleInUse = activeShipments.some(s => s.vehicleAssignment?.vehicleId === data.vehicleId);
+    if (vehicleInUse && selectedVehicle) {
+      setError('vehicleId', {
+        type: 'manual',
+        message: `Vehicle ${selectedVehicle.plateNumber} is currently assigned to another active shipment.`
+      });
+      hasError = true;
+    }
+
     // Validate Driver Availability & License Class
     const selectedDriver = drivers?.find(d => d.id === data.driverId);
     if (selectedDriver) {
@@ -139,6 +151,15 @@ export function Shipments() {
           });
           hasError = true;
         }
+      }
+
+      const driverInUse = activeShipments.some(s => s.driverAssignment?.driverId === data.driverId);
+      if (driverInUse && selectedDriver) {
+        setError('driverId', {
+          type: 'manual',
+          message: `Driver ${selectedDriver.fullName} is currently assigned to another active shipment.`
+        });
+        hasError = true;
       }
     }
 
@@ -249,6 +270,7 @@ export function Shipments() {
                   <thead className="bg-gray-50/80 border-b border-gray-100 backdrop-blur-md">
                     <tr>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Shipment ID</th>
+                      <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Route</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Assigned Resources</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
@@ -266,8 +288,17 @@ export function Shipments() {
                           <td className="px-6 py-5">
                             <div className="flex items-center gap-3">
                               <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-gray-300 group-hover:bg-gray-400'} transition-colors`} />
-                              <span className={`text-sm font-bold font-mono tracking-tight ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
-                                {shipment.id.split('-')[0]}...
+                              <div>
+                                <p className={`font-bold text-sm ${isSelected ? 'text-blue-700' : 'text-gray-900'} transition-colors`}>{shipment.id.split('-')[0]}</p>
+                                <p className="text-xs text-gray-500 font-medium">{new Date(shipment.createdAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-gray-900 text-sm">{shipment.order?.customerName || 'Unknown Customer'}</span>
+                              <span className="text-xs text-gray-500 max-w-[200px] truncate" title={`${shipment.pickupDeliveryOption?.pickupAddress || 'Pending'} → ${shipment.pickupDeliveryOption?.deliveryAddress || 'Pending'}`}>
+                                {shipment.pickupDeliveryOption?.pickupAddress?.split(',')[0] || 'Pending'} → {shipment.pickupDeliveryOption?.deliveryAddress?.split(',')[0] || 'Pending'}
                               </span>
                             </div>
                           </td>

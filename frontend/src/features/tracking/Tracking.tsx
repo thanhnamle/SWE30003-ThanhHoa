@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MapPin, Navigation, CheckSquare, Upload, Loader2, CheckCircle2, PackageCheck, Truck, ArrowRight, ShieldCheck, Compass, Clock } from 'lucide-react';
+import { MapPin, Navigation, CheckSquare, Upload, Loader2, CheckCircle2, PackageCheck, Truck, ArrowRight, ShieldCheck, Compass, Clock, Package } from 'lucide-react';
 import { trackingApi } from './api/trackingApi';
 import { Shipment } from '../shipments/api/shipmentApi';
 import { Modal } from '@/components/common/Modal';
@@ -243,7 +243,7 @@ export function Tracking() {
     setIsUpdatingStatus(shipment.id);
     // Optimistic local state update
     setDisplayList(prev => prev.map(s => s.id === shipment.id ? { ...s, status: newStatus as any } : s));
-    
+
     try {
       await trackingApi.updateShipmentStatus(shipment.id, newStatus);
       queryClient.invalidateQueries({ queryKey: ['driver-shipments'] });
@@ -257,7 +257,7 @@ export function Tracking() {
   const handleSubmitPod = async () => {
     if (!selectedShipment || !signatureData) return;
     setIsSubmittingPod(true);
-    
+
     try {
       await trackingApi.submitProofOfDelivery({
         shipmentId: selectedShipment.id,
@@ -285,7 +285,7 @@ export function Tracking() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
-      
+
       {/* Mobile-Friendly Premium Header */}
       <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-900 via-blue-900 to-indigo-950 p-8 shadow-2xl">
         <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-blue-500/20 rounded-full blur-[60px] pointer-events-none animate-pulse duration-10000"></div>
@@ -308,15 +308,21 @@ export function Tracking() {
             <div key={i} className="h-64 bg-gray-100/50 backdrop-blur-sm border border-gray-100 rounded-[2rem] animate-pulse"></div>
           ))}
         </div>
+      ) : displayList.length === 0 ? (
+        <div className="text-center py-20 bg-white border border-gray-100 rounded-[2rem] shadow-sm">
+          <Package className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 mb-2">No active tasks</h3>
+          <p className="text-gray-500 font-medium">You don't have any shipments assigned to you right now.</p>
+        </div>
       ) : (
         <div className="space-y-6">
           {displayList.map((shipment, idx) => (
-            <div 
-              key={shipment.id} 
+            <div
+              key={shipment.id}
               className="group relative bg-white border border-gray-200/80 rounded-[2rem] p-6 md:p-8 shadow-lg shadow-gray-200/40 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200/80 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4"
               style={{ animationDelay: `${idx * 100}ms`, animationFillMode: 'both' }}
             >
-              
+
               {/* Card Header & Status */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div className="flex items-center gap-4">
@@ -332,13 +338,12 @@ export function Tracking() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm border ${
-                    shipment.status === 'InTransit' 
-                      ? 'bg-blue-50 text-blue-700 border-blue-200/80 animate-pulse' 
+                  <span className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm border ${shipment.status === 'InTransit'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200/80 animate-pulse'
                       : shipment.status === 'Delivered'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-                      : 'bg-amber-50 text-amber-700 border-amber-200/80'
-                  }`}>
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                        : 'bg-amber-50 text-amber-700 border-amber-200/80'
+                    }`}>
                     {shipment.status === 'InTransit' ? 'In Transit' : shipment.status === 'Delivered' ? 'Delivered' : 'Ready For Pickup'}
                   </span>
                 </div>
@@ -403,7 +408,7 @@ export function Tracking() {
               {/* Action Buttons */}
               <div className="mt-8">
                 {shipment.status === 'ReadyForPickup' && (
-                  <button 
+                  <button
                     onClick={() => handleStatusUpdate(shipment, 'InTransit')}
                     disabled={isUpdatingStatus === shipment.id}
                     className="group/btn relative w-full flex justify-center items-center gap-3 py-4 bg-gray-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-gray-900/20 hover:bg-gray-800 hover:shadow-gray-900/40 hover:-translate-y-0.5 transition-all overflow-hidden disabled:opacity-70 disabled:hover:translate-y-0"
@@ -420,15 +425,15 @@ export function Tracking() {
                 )}
 
                 {shipment.status === 'InTransit' && (
-                  <button 
+                  <button
                     onClick={() => { setSelectedShipment(shipment); setShowPodModal(true); }}
                     className="group/btn relative w-full flex justify-center items-center gap-3 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-0.5 transition-all"
                   >
-                    <CheckSquare className="w-6 h-6 group-hover/btn:scale-110 transition-transform" /> 
+                    <CheckSquare className="w-6 h-6 group-hover/btn:scale-110 transition-transform" />
                     Collect Proof of Delivery
                   </button>
                 )}
-                
+
                 {shipment.status === 'Delivered' && (
                   <button disabled className="w-full flex justify-center items-center gap-2 py-4 bg-emerald-50/50 text-emerald-700 border-2 border-emerald-200 rounded-2xl font-bold cursor-default opacity-80">
                     <ShieldCheck className="w-6 h-6" /> Completed Successfully
@@ -454,11 +459,10 @@ export function Tracking() {
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
               Recipient Signature <span className="text-red-500">*</span>
             </label>
-            <div className={`h-40 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ${
-              signatureData 
-                ? 'border-emerald-400 bg-emerald-50/50 shadow-inner' 
+            <div className={`h-40 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ${signatureData
+                ? 'border-emerald-400 bg-emerald-50/50 shadow-inner'
                 : 'border-dashed border-slate-300 bg-slate-50/80 hover:border-blue-400 hover:bg-blue-50/30'
-            }`}>
+              }`}>
               {signatureData ? (
                 <div className="text-center text-emerald-600 animate-in zoom-in duration-300">
                   <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm">
@@ -467,9 +471,9 @@ export function Tracking() {
                   <span className="text-sm font-bold block">Signature Captured</span>
                 </div>
               ) : (
-                <button 
+                <button
                   type="button"
-                  onClick={handleSign} 
+                  onClick={handleSign}
                   className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:text-blue-600 hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-2"
                 >
                   <Upload className="w-4 h-4" /> Tap to Sign Digital Pad
@@ -483,7 +487,7 @@ export function Tracking() {
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
               Delivery Notes
             </label>
-            <textarea 
+            <textarea
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 text-sm placeholder-slate-400 resize-none"
@@ -494,14 +498,14 @@ export function Tracking() {
 
           {/* Modal Actions */}
           <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
-            <button 
+            <button
               type="button"
               onClick={() => setShowPodModal(false)}
               className="px-4 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl text-sm transition-colors"
             >
               Cancel
             </button>
-            <button 
+            <button
               type="button"
               onClick={handleSubmitPod}
               disabled={!signatureData || isSubmittingPod}
@@ -511,7 +515,7 @@ export function Tracking() {
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  Complete Delivery 
+                  Complete Delivery
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

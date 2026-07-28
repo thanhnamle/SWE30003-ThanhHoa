@@ -122,6 +122,12 @@ export function Payments() {
                 <div key={i} className="h-32 bg-gray-50 border border-gray-100 rounded-[2rem] animate-pulse"></div>
               ))}
             </div>
+          ) : invoices?.length === 0 ? (
+            <div className="text-center py-16 bg-white border border-gray-100 rounded-[2rem] shadow-sm">
+              <FileText className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Outstanding Invoices</h3>
+              <p className="text-gray-500 font-medium">All caught up! There are no pending invoices to pay.</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {invoices?.map((invoice, idx) => (
@@ -139,7 +145,7 @@ export function Payments() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">INV: {invoice.id}</span>
                           <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                          <span className="text-xs font-semibold text-gray-500">Order: {invoice.orderId}</span>
+                          <span className="text-xs font-semibold text-gray-500">Order: {invoice.orderId.split('-')[0]}</span>
                         </div>
                         <h3 className="text-lg font-bold text-gray-900">Order: {invoice.orderId.split('-')[0]}</h3>
                       </div>
@@ -232,7 +238,7 @@ export function Payments() {
                 <div className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 text-left">
                    <div className="flex justify-between items-center mb-2">
                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receipt ID</span>
-                     <span className="font-mono text-xs font-black text-gray-900">{paymentResult.receiptId}</span>
+                     <span className="font-mono text-xs font-black text-gray-900">{paymentResult.id || paymentResult.receiptId}</span>
                    </div>
                    <div className="flex justify-between items-center">
                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Payment ID</span>
