@@ -24,7 +24,6 @@ public class SmartFmDbContext : DbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<TrackingRecord> TrackingRecords => Set<TrackingRecord>();
-    public DbSet<DeliveryException> DeliveryExceptions => Set<DeliveryException>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
     public DbSet<AppNotification> AppNotifications => Set<AppNotification>();
 
@@ -92,7 +91,7 @@ public class SmartFmDbContext : DbContext
 
     private static void SeedUsers(ModelBuilder modelBuilder)
     {
-        // Default admin â€“ password: Admin123!
+        // Default admin – password: Admin123!
         modelBuilder.Entity<AppUser>().HasData(new AppUser
         {
             Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
