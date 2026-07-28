@@ -31,7 +31,10 @@ public class OrdersController : ControllerBase
             CargoWeightKg = o.CargoWeightKg,
             CargoVolumeM3 = o.CargoVolumeM3,
             SpecialHandlingNotes = o.SpecialHandlingNotes,
-            CreatedAt = o.CreatedAt
+            CreatedAt = o.CreatedAt,
+            CustomerId = o.CustomerId,
+            BranchId = o.BranchId,
+            TransportOfferingId = o.TransportOfferingId
         });
         return Ok(result);
     }
@@ -49,7 +52,10 @@ public class OrdersController : ControllerBase
             CargoWeightKg = order.CargoWeightKg,
             CargoVolumeM3 = order.CargoVolumeM3,
             SpecialHandlingNotes = order.SpecialHandlingNotes,
-            CreatedAt = order.CreatedAt
+            CreatedAt = order.CreatedAt,
+            CustomerId = order.CustomerId,
+            BranchId = order.BranchId,
+            TransportOfferingId = order.TransportOfferingId
         });
     }
 

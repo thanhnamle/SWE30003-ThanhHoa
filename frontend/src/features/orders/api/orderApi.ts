@@ -42,6 +42,11 @@ export const orderApi = {
     return response.data;
   },
 
+  getOrders: async (): Promise<any[]> => {
+    const response = await apiClient.get<any[]>('/api/orders');
+    return response.data;
+  },
+
   createOrder: async (order: CreateOrderRequest): Promise<{ id: string; status: string }> => {
     const response = await apiClient.post<{ id: string; status: string }>('/api/orders', {
       customerId: order.customerId,
@@ -52,6 +57,22 @@ export const orderApi = {
       specialHandlingNotes: order.specialHandlingNotes,
     });
     return response.data;
+  },
+
+  editOrder: async (id: string, order: CreateOrderRequest): Promise<{ id: string; status: string }> => {
+    const response = await apiClient.put<{ id: string; status: string }>(`/api/orders/${id}`, {
+      customerId: order.customerId,
+      branchId: order.branchId,
+      transportOfferingId: order.transportOfferingId,
+      cargoWeightKg: order.cargoWeightKg,
+      cargoVolumeM3: order.cargoVolumeM3,
+      specialHandlingNotes: order.specialHandlingNotes,
+    });
+    return response.data;
+  },
+
+  cancelOrder: async (id: string): Promise<void> => {
+    await apiClient.post(`/api/orders/${id}/cancel`);
   },
 
   createCustomer: async (customer: Omit<Customer, 'id'>): Promise<Customer> => {

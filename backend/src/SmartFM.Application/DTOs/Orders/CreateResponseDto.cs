@@ -10,4 +10,7 @@ public class OrderResponseDto
     public decimal CargoVolumeM3 { get; set; }
     public string SpecialHandlingNotes { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public Guid CustomerId { get; set; }
+    public Guid BranchId { get; set; }
+    public Guid TransportOfferingId { get; set; }
 }
