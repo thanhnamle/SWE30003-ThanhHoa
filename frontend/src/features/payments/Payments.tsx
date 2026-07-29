@@ -238,7 +238,7 @@ export function Payments() {
                 <div className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 text-left">
                    <div className="flex justify-between items-center mb-2">
                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receipt ID</span>
-                     <span className="font-mono text-xs font-black text-gray-900">{paymentResult.id || paymentResult.receiptId}</span>
+                     <span className="font-mono text-xs font-black text-gray-900">{paymentResult.receiptId}</span>
                    </div>
                    <div className="flex justify-between items-center">
                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Payment ID</span>

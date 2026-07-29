@@ -8,8 +8,6 @@ import { Modal } from '@/components/common/Modal';
 function ShipmentMiniMap({ shipment }: { shipment: Shipment }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMap = useRef<any>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-
   // Helper to parse Vietnam coordinates from address string
   const getCoordsForCity = (address?: string): [number, number] => {
     const a = (address || '').toLowerCase();
@@ -114,7 +112,7 @@ function ShipmentMiniMap({ shipment }: { shipment: Shipment }) {
       // Auto-fit Map Viewport to include both cities cleanly!
       const bounds = L.latLngBounds([pCoords, dCoords]);
       map.fitBounds(bounds, { padding: [45, 45] });
-      setMapLoaded(true);
+      console.log('Map loaded successfully');
     };
 
     if ((window as any).L) {

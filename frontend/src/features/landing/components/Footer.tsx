@@ -1,4 +1,4 @@
-import { Truck, Mail, Phone, MapPin, Globe, ArrowUp } from 'lucide-react';
+import { Truck, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
@@ -29,10 +29,6 @@ const FooterLink = ({ href, children }: { href: string; children: ReactNode }) =
 );
 
 export const Footer = () => {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <footer className="bg-slate-950 text-white pt-16 pb-12 border-t border-slate-900 relative overflow-hidden">
       {/* Top accent glow line */}

@@ -1,5 +1,5 @@
 import { PageContainer } from "@/components/common/PageContainer";
-import { FileText, DollarSign, Package, Car, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { DollarSign, Package, Car, Users, TrendingUp, AlertTriangle } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { reportApi } from './api/reportApi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Sparkles, Zap, ShieldCheck } from 'lucide-react';
+import { Check, Sparkles, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 

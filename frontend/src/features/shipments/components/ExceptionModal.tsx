@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { trackingApi, DeliveryExceptionDto } from '../../tracking/api/trackingApi';
+import { trackingApi } from '../../tracking/api/trackingApi';
 import { AlertTriangle, Clock, Play, CheckCircle2, X, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 
