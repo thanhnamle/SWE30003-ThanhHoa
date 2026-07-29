@@ -26,8 +26,15 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
+        var origins = new List<string> { "http://localhost:5173", "http://localhost:4173", "http://localhost:5174" };
+        var frontendUrl = builder.Configuration["FrontendUrl"];
+        if (!string.IsNullOrWhiteSpace(frontendUrl))
+        {
+            origins.Add(frontendUrl);
+        }
+
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:4173", "http://localhost:5174")
+            .WithOrigins(origins.ToArray())
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -82,7 +89,7 @@ var app = builder.Build();
 // ──────────────────────────────────────────────
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || builder.Configuration["EnableSwagger"] == "True")
 {
     app.UseSwagger();
     app.UseSwaggerUI();
