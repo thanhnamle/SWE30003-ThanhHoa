@@ -108,6 +108,9 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<SmartFM.Infrastructure.Persistence.SmartFmDbContext>();
     
+    // TẠM THỜI THÊM LỆNH NÀY ĐỂ XÓA SẠCH DATABASE LỖI CŨ, SAU KHI CHẠY XONG SẼ GỠ BỎ
+    dbContext.Database.EnsureDeleted();
+
     // Áp dụng các thay đổi cấu trúc bảng (Migrations) vào Database (cực kỳ quan trọng khi deploy lên DB mới)
     dbContext.Database.Migrate();
 
