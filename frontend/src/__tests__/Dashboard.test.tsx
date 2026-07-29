@@ -5,7 +5,7 @@ import { renderWithProviders } from '@/test/testUtils';
 import { dashboardApi } from '@/features/dashboard/api/dashboardApi';
 import { shipmentApi } from '@/features/shipments/api/shipmentApi';
 import { paymentApi } from '@/features/payments/api/paymentApi';
-import React from 'react';
+
 
 vi.mock('@/features/dashboard/api/dashboardApi', () => ({
   dashboardApi: {

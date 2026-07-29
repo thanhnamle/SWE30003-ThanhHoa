@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Login } from '@/features/auth/Login';
 import { renderWithProviders } from '@/test/testUtils';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import React from 'react';
+
 
 vi.mock('@/features/auth/context/AuthContext', () => ({
   useAuth: vi.fn(),

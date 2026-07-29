@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Tracking } from '@/features/tracking/Tracking';
 import { renderWithProviders } from '@/test/testUtils';
 import { trackingApi } from '@/features/tracking/api/trackingApi';
-import React from 'react';
+
 
 // Mock Leaflet as it requires a real DOM and causes issues in JSDOM
 vi.mock('leaflet', () => {
