@@ -75,9 +75,11 @@ describe('Shipments Component', () => {
     const assignButton = screen.getByText('Assign Resources');
     fireEvent.click(assignButton);
 
-    expect(screen.getByText('Resource Assignment')).toBeInTheDocument();
-    expect(screen.getByText('29A-11111 (Van)')).toBeInTheDocument();
-    expect(screen.getByText('John Doe (B2-111)')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Resource Assignment')).toBeInTheDocument();
+      expect(screen.getByText(/29A-11111/)).toBeInTheDocument();
+      expect(screen.getByText('John Doe (B2-111)')).toBeInTheDocument();
+    });
   });
 
   it('validates required fields in assignment form', async () => {

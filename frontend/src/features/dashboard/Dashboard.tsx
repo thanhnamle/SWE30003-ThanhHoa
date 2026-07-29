@@ -70,6 +70,19 @@ export function Dashboard() {
          return { name: monthName, value: val > 0 ? val : Math.floor(Math.random() * 50) + 20 };
       });
       setRevenueData(revData);
+    }).catch(err => {
+      console.error("Dashboard failed to load data:", err);
+      // Fallback data in case of error
+      setShipmentStatusData([
+        { name: 'Pending', value: 0 },
+        { name: 'InTransit', value: 0 },
+        { name: 'Delivered', value: 0 },
+      ]);
+      setRecentOrders([
+        { id: 'ORD-10482', customer: 'System Default', route: 'N/A', status: 'Pending', amount: 0 }
+      ]);
+      setRevenueData([]);
+    }).finally(() => {
       setLoading(false);
     });
   }, []);

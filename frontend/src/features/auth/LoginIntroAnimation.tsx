@@ -249,12 +249,21 @@ export function LoginIntroAnimation({ onFinish }: { onFinish: () => void }) {
           />
         </div>
 
-        <div
-          className="flex items-center gap-1.5 text-blue-200/60 text-xs"
-          style={{ animation: 'sfm2-rise 0.6s ease-out 0.15s both' }}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>SmartFM · Smart fleet management</span>
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="flex items-center gap-1.5 text-blue-200/60 text-xs"
+            style={{ animation: 'sfm2-rise 0.6s ease-out 0.15s both' }}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>SmartFM · Smart fleet management</span>
+          </div>
+
+          <button 
+            onClick={onFinish}
+            className="px-4 py-1.5 text-xs font-semibold text-blue-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 shadow-sm"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
