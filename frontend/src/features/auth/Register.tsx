@@ -46,10 +46,6 @@ export function Register() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const {
     register,
     handleSubmit,
@@ -58,6 +54,10 @@ export function Register() {
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
   });
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
