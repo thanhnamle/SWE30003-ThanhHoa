@@ -92,7 +92,10 @@ public class OrderService : IOrderService
         };
         order.Invoice = invoice;
 
+        // Explicitly add related entities to guarantee they are saved
         await _orderRepository.AddAsync(order);
+        await _shipmentRepository.AddAsync(shipment);
+        await _invoiceRepository.AddAsync(invoice);
 
         await _notificationService.CreateNotificationAsync(
             "New Order Created",
@@ -160,6 +163,22 @@ public class OrderService : IOrderService
         }
 
         order.Status = OrderStatus.Validated;
+        
+        // Ensure a shipment exists (handles seeded orders that might lack one)
+        var shipments = await _shipmentRepository.GetAllAsync();
+        var existingShipment = shipments.FirstOrDefault(s => s.OrderId == id);
+        if (existingShipment == null)
+        {
+            var shipment = new Shipment
+            {
+                Id = Guid.NewGuid(),
+                OrderId = order.Id,
+                Status = ShipmentStatus.Preparing,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _shipmentRepository.AddAsync(shipment);
+        }
+
         await _orderRepository.UpdateAsync(order);
     }
 

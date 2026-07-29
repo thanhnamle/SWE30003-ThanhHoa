@@ -75,6 +75,10 @@ export const orderApi = {
     await apiClient.post(`/api/orders/${id}/cancel`);
   },
 
+  approveOrder: async (id: string): Promise<void> => {
+    await apiClient.post(`/api/orders/${id}/approve`);
+  },
+
   createCustomer: async (customer: Omit<Customer, 'id'>): Promise<Customer> => {
     const response = await apiClient.post<Customer>('/api/customers', customer);
     return response.data;
