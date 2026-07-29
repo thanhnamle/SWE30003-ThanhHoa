@@ -68,7 +68,9 @@ export function Login() {
       // Khi login thành công, bật màn hình Intro lên thay vì chuyển trang ngay
       setShowIntro(true);
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : 'Login failed.');
+      const axiosError = err as any;
+      const errorMsg = axiosError.response?.data?.message || (err instanceof Error ? err.message : 'Login failed.');
+      setServerError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

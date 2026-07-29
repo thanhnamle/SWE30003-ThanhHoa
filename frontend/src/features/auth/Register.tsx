@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, Navigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -41,10 +41,14 @@ const FEATURES = [
 ];
 
 export function Register() {
-  const { register: registerUser } = useAuth();
+  const { isAuthenticated, register: registerUser } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const {
     register,
@@ -64,9 +68,11 @@ export function Register() {
     setIsSubmitting(true);
     try {
       await registerUser(data);
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : 'Registration failed.');
+      const axiosError = err as any;
+      const errorMsg = axiosError.response?.data?.message || (err instanceof Error ? err.message : 'Registration failed.');
+      setServerError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

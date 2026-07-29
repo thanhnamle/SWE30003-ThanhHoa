@@ -38,7 +38,7 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _authService.RegisterAsync(request);
-            return CreatedAtAction(nameof(Login), result);
+            return Ok(result);
         }
         catch (BusinessRuleException ex)
         {
