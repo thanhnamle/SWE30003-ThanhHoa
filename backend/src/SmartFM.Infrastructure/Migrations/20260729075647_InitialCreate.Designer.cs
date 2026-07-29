@@ -12,8 +12,8 @@ using SmartFM.Infrastructure.Persistence;
 namespace SmartFM.Infrastructure.Migrations
 {
     [DbContext(typeof(SmartFmDbContext))]
-    [Migration("20260716145821_AddPaymentAndReceipt")]
-    partial class AddPaymentAndReceipt
+    [Migration("20260729075647_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,105 @@ namespace SmartFM.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+
+            modelBuilder.Entity("SmartFM.Domain.Entities.AppNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppNotifications");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("50000000-0000-0000-0000-000000000001"),
+                            CreatedAt = new DateTime(2026, 7, 23, 3, 29, 48, 0, DateTimeKind.Utc),
+                            IsRead = false,
+                            Message = "Samsung Electronics placed a new freight order.",
+                            Title = "New Order Created",
+                            Type = "Order"
+                        },
+                        new
+                        {
+                            Id = new Guid("50000000-0000-0000-0000-000000000002"),
+                            CreatedAt = new DateTime(2026, 7, 23, 2, 31, 48, 0, DateTimeKind.Utc),
+                            IsRead = false,
+                            Message = "SHP-9022 is delayed due to heavy traffic conditions.",
+                            Title = "Shipment Delayed",
+                            Type = "Alert"
+                        },
+                        new
+                        {
+                            Id = new Guid("50000000-0000-0000-0000-000000000003"),
+                            CreatedAt = new DateTime(2026, 7, 22, 22, 31, 48, 0, DateTimeKind.Utc),
+                            IsRead = true,
+                            Message = "Invoice INV-2026-114 has been successfully paid.",
+                            Title = "Payment Received",
+                            Type = "Payment"
+                        });
+                });
+
+            modelBuilder.Entity("SmartFM.Domain.Entities.AppUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@smartfm.vn",
+                            FullName = "System Administrator",
+                            PasswordHash = "$2a$11$K9lZlSHAf.vn5SZ1fU5eyuG7GZKF4PKV4qpBKGb2WkU0.JIwNRmxu",
+                            Role = "Admin"
+                        });
+                });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Branch", b =>
                 {
@@ -53,6 +152,17 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Branches");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Address = "123 Nguyen Van Linh, District 7",
+                            ContactPhone = "028-1234-5678",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Ho Chi Minh City Branch",
+                            Region = "South"
+                        });
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Customer", b =>
@@ -85,6 +195,44 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("SmartFM.Domain.Entities.DeliveryException", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("RaisedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ResolutionAction")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ShipmentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipmentId");
+
+                    b.ToTable("DeliveryException", (string)null);
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Driver", b =>
@@ -120,7 +268,26 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.ToTable("Drivers");
+                    b.HasIndex("IsOnLeave")
+                        .HasDatabaseName("IX_Driver_IsOnLeave");
+
+                    b.ToTable("Drivers", t =>
+                        {
+                            t.HasCheckConstraint("CK_Driver_MaxWeeklyHours", "`MaxWeeklyHours` >= 1 AND `MaxWeeklyHours` <= 168");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            BranchId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FullName = "Nguyen Van A",
+                            IsOnLeave = false,
+                            LicenseExpiryDate = new DateTime(2028, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LicenseNumber = "C-998877",
+                            MaxWeeklyHours = 48
+                        });
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.DriverAssignment", b =>
@@ -149,10 +316,11 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DriverId");
-
                     b.HasIndex("ShipmentId")
                         .IsUnique();
+
+                    b.HasIndex("DriverId", "Status")
+                        .HasDatabaseName("IX_DriverAssignment_DriverId_Status");
 
                     b.ToTable("DriverAssignments");
                 });
@@ -304,6 +472,36 @@ namespace SmartFM.Infrastructure.Migrations
                     b.ToTable("PickupDeliveryOptions");
                 });
 
+            modelBuilder.Entity("SmartFM.Domain.Entities.ProofOfDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ProofImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ReceivedByName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("ShipmentId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipmentId")
+                        .IsUnique();
+
+                    b.ToTable("ProofOfDelivery");
+                });
+
             modelBuilder.Entity("SmartFM.Domain.Entities.Receipt", b =>
                 {
                     b.Property<Guid>("Id")
@@ -360,6 +558,33 @@ namespace SmartFM.Infrastructure.Migrations
                     b.ToTable("Shipments");
                 });
 
+            modelBuilder.Entity("SmartFM.Domain.Entities.TrackingRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ShipmentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("StatusNote")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipmentId");
+
+                    b.ToTable("TrackingRecords");
+                });
+
             modelBuilder.Entity("SmartFM.Domain.Entities.TransportOffering", b =>
                 {
                     b.Property<Guid>("Id")
@@ -395,6 +620,20 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TransportOfferings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            BaseFee = 500000m,
+                            Category = 0,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Standard truck freight service",
+                            FeePerKm = 15000m,
+                            IsActive = true,
+                            MaxCapacityKg = 5000m,
+                            Name = "Standard Freight"
+                        });
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Vehicle", b =>
@@ -432,7 +671,23 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
+                    b.HasIndex("IsUnderMaintenance")
+                        .HasDatabaseName("IX_Vehicle_IsUnderMaintenance");
+
                     b.ToTable("Vehicles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            BranchId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsUnderMaintenance = false,
+                            MaxPayloadKg = 5000m,
+                            MaxVolumeM3 = 20m,
+                            PlateNumber = "51A-123.45",
+                            Type = 1
+                        });
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.VehicleAssignment", b =>
@@ -461,9 +716,21 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasIndex("ShipmentId")
                         .IsUnique();
 
-                    b.HasIndex("VehicleId");
+                    b.HasIndex("VehicleId", "Status")
+                        .HasDatabaseName("IX_VehicleAssignment_VehicleId_Status");
 
                     b.ToTable("VehicleAssignments");
+                });
+
+            modelBuilder.Entity("SmartFM.Domain.Entities.DeliveryException", b =>
+                {
+                    b.HasOne("SmartFM.Domain.Entities.Shipment", "Shipment")
+                        .WithMany("DeliveryExceptions")
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shipment");
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Driver", b =>
@@ -471,7 +738,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.Branch", "Branch")
                         .WithMany("Drivers")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
@@ -512,7 +779,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.Branch", "Branch")
                         .WithMany("Orders")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SmartFM.Domain.Entities.Customer", "Customer")
@@ -524,7 +791,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.TransportOffering", "TransportOffering")
                         .WithMany("Orders")
                         .HasForeignKey("TransportOfferingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
@@ -556,6 +823,17 @@ namespace SmartFM.Infrastructure.Migrations
                     b.Navigation("Shipment");
                 });
 
+            modelBuilder.Entity("SmartFM.Domain.Entities.ProofOfDelivery", b =>
+                {
+                    b.HasOne("SmartFM.Domain.Entities.Shipment", "Shipment")
+                        .WithOne("ProofOfDelivery")
+                        .HasForeignKey("SmartFM.Domain.Entities.ProofOfDelivery", "ShipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shipment");
+                });
+
             modelBuilder.Entity("SmartFM.Domain.Entities.Receipt", b =>
                 {
                     b.HasOne("SmartFM.Domain.Entities.Payment", "Payment")
@@ -578,12 +856,23 @@ namespace SmartFM.Infrastructure.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("SmartFM.Domain.Entities.TrackingRecord", b =>
+                {
+                    b.HasOne("SmartFM.Domain.Entities.Shipment", "Shipment")
+                        .WithMany("TrackingRecords")
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shipment");
+                });
+
             modelBuilder.Entity("SmartFM.Domain.Entities.Vehicle", b =>
                 {
                     b.HasOne("SmartFM.Domain.Entities.Branch", "Branch")
                         .WithMany("Vehicles")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
@@ -646,9 +935,15 @@ namespace SmartFM.Infrastructure.Migrations
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Shipment", b =>
                 {
+                    b.Navigation("DeliveryExceptions");
+
                     b.Navigation("DriverAssignment");
 
                     b.Navigation("PickupDeliveryOption");
+
+                    b.Navigation("ProofOfDelivery");
+
+                    b.Navigation("TrackingRecords");
 
                     b.Navigation("VehicleAssignment");
                 });

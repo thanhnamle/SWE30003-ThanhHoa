@@ -229,7 +229,7 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("ShipmentId");
 
-                    b.ToTable("DeliveryException");
+                    b.ToTable("DeliveryException", (string)null);
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Driver", b =>
