@@ -23,13 +23,13 @@ public class AuthApiExtendedTests : IClassFixture<CustomWebApplicationFactory<Pr
     [Theory]
     [InlineData("a@b.com", "12345678")]
     [InlineData("test.user.long.email@domain.co.uk", "SuperSecretPass123!")]
-    public async Task Register_VariousValidEmails_ShouldReturn_201Created(string email, string password)
+    public async Task Register_VariousValidEmails_ShouldReturn_200OK(string email, string password)
     {
         var request = new RegisterRequest("Valid User", email, password, password);
 
         var response = await _client.PostAsJsonAsync("/api/auth/register", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]

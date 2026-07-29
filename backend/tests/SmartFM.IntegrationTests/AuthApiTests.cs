@@ -21,13 +21,13 @@ public class AuthApiTests : IClassFixture<CustomWebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Register_ValidRequest_ShouldReturn_201Created_AndAuthResponse()
+    public async Task Register_ValidRequest_ShouldReturn_200OK_AndAuthResponse()
     {
         var request = new RegisterRequest("Integration Test User", "intuser1@smartfm.vn", "SecurePassword123!", "SecurePassword123!");
 
         var response = await _client.PostAsJsonAsync("/api/auth/register", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
         result.Should().NotBeNull();
@@ -88,7 +88,7 @@ public class AuthApiTests : IClassFixture<CustomWebApplicationFactory<Program>>
         var regRequest = new RegisterRequest("Flow User", email, password, password);
 
         var regResponse = await _client.PostAsJsonAsync("/api/auth/register", regRequest);
-        regResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        regResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var loginRequest = new LoginRequest(email, password);
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginRequest);

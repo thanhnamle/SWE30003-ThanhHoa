@@ -27,8 +27,10 @@ public static class TestDataSeeder
     public static readonly Guid OrderPendingId = Guid.Parse("66666666-6666-6666-6666-666666666661");
     public static readonly Guid OrderPendingInsufficientId = Guid.Parse("66666666-6666-6666-6666-666666666662");
     public static readonly Guid OrderPaidId = Guid.Parse("66666666-6666-6666-6666-666666666663");
+    public static readonly Guid OrderDriverOnLeaveId = Guid.Parse("66666666-6666-6666-6666-666666666664");
 
     public static readonly Guid ShipmentPreparingId = Guid.Parse("77777777-7777-7777-7777-777777777771");
+    public static readonly Guid ShipmentDriverOnLeaveId = Guid.Parse("77777777-7777-7777-7777-777777777773");
     
     // Distinct invoice IDs for each test case to avoid state contamination
     public static readonly Guid InvoiceUnpaidId = Guid.Parse("88888888-8888-8888-8888-888888888881");
@@ -114,7 +116,18 @@ public static class TestDataSeeder
             Status = OrderStatus.Validated,
             CreatedAt = DateTime.UtcNow
         };
-        context.Orders.AddRange(orderPending, orderPendingInsufficient, orderPaid);
+        var orderDriverOnLeave = new Order
+        {
+            Id = OrderDriverOnLeaveId,
+            CustomerId = CustomerId,
+            BranchId = BranchId,
+            TransportOfferingId = TransportOfferingId,
+            CargoWeightKg = 300m,
+            CargoVolumeM3 = 2m,
+            Status = OrderStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+        context.Orders.AddRange(orderPending, orderPendingInsufficient, orderPaid, orderDriverOnLeave);
 
         // Add Shipment
         var shipment = new Shipment
@@ -124,7 +137,14 @@ public static class TestDataSeeder
             Status = ShipmentStatus.Preparing,
             CreatedAt = DateTime.UtcNow
         };
-        context.Shipments.Add(shipment);
+        var shipmentDriverOnLeave = new Shipment
+        {
+            Id = ShipmentDriverOnLeaveId,
+            OrderId = OrderDriverOnLeaveId,
+            Status = ShipmentStatus.Preparing,
+            CreatedAt = DateTime.UtcNow
+        };
+        context.Shipments.AddRange(shipment, shipmentDriverOnLeave);
 
         // Add Invoices (linked to unique orders to respect 1-to-1 relationships)
         var invoiceUnpaid = new Invoice

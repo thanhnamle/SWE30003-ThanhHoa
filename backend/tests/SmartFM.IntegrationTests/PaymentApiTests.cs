@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
 using SmartFM.Application.DTOs.Payments;
 using SmartFM.Domain.Enums;
 using SmartFM.IntegrationTests.Helpers;
@@ -17,6 +18,7 @@ namespace SmartFM.IntegrationTests;
 public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory<Program> _factory;
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new System.Text.Json.JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
@@ -25,6 +27,7 @@ public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program
 
     public PaymentApiTests(CustomWebApplicationFactory<Program> factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
@@ -60,6 +63,13 @@ public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program
         var response = await _client.PostAsJsonAsync($"/api/payments/invoice/{TestDataSeeder.InvoiceUnpaidInsufficientId}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Verify transaction rollback - Invoice should still be Unpaid
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<SmartFM.Infrastructure.Persistence.SmartFmDbContext>();
+        var invoice = await dbContext.Invoices.FindAsync(TestDataSeeder.InvoiceUnpaidInsufficientId);
+        invoice.Should().NotBeNull();
+        invoice!.Status.Should().Be(InvoiceStatus.Unpaid);
     }
 
     [Fact]
@@ -74,5 +84,22 @@ public class PaymentApiTests : IClassFixture<CustomWebApplicationFactory<Program
         var response = await _client.PostAsJsonAsync($"/api/payments/invoice/{TestDataSeeder.InvoicePaidId}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetInvoices_ShouldReturn_200Ok_WithData()
+    {
+        var response = await _client.GetAsync("/api/payments/invoices");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain(TestDataSeeder.InvoiceUnpaidId.ToString());
+    }
+
+    [Fact]
+    public async Task GetReceipts_ShouldReturn_200Ok()
+    {
+        var response = await _client.GetAsync("/api/payments/receipts");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

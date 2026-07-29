@@ -97,7 +97,8 @@ public class EnumCoverageTests
 
     [Theory]
     [InlineData(ExceptionStatus.Open, 0)]
-    [InlineData(ExceptionStatus.Resolved, 1)]
+    [InlineData(ExceptionStatus.OnHold, 1)]
+    [InlineData(ExceptionStatus.Resolved, 2)]
     public void ExceptionStatus_EnumValues_ShouldBeDefined(ExceptionStatus status, int expectedValue)
     {
         ((int)status).Should().Be(expectedValue);

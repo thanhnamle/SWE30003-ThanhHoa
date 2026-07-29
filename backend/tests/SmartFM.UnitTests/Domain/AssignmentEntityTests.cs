@@ -82,4 +82,43 @@ public class AssignmentEntityTests
         da.AssignedAt.Should().Be(assignedAt);
         da.ConflictNotes.Should().Be("Schedule close to shift end");
     }
+
+    [Fact]
+    public void DriverAssignment_StatusTransition_ShouldAllow_ApprovedWithNotes()
+    {
+        var da = new DriverAssignment();
+        da.Status.Should().Be(AssignmentStatus.Proposed);
+
+        da.Status = AssignmentStatus.Approved;
+        da.ApprovedAt = DateTime.UtcNow;
+        da.ConflictNotes = "Overtime approved by manager";
+
+        da.Status.Should().Be(AssignmentStatus.Approved);
+        da.ApprovedAt.Should().NotBeNull();
+        da.ConflictNotes.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void DriverAssignment_StatusTransition_ShouldAllow_Rejected()
+    {
+        var da = new DriverAssignment();
+        da.Status = AssignmentStatus.Rejected;
+        da.ConflictNotes = "Driver license expired";
+
+        da.Status.Should().Be(AssignmentStatus.Rejected);
+        da.ConflictNotes.Should().Be("Driver license expired");
+    }
+
+    [Fact]
+    public void VehicleAssignment_StatusTransition_ShouldAllow_Approved()
+    {
+        var va = new VehicleAssignment();
+        va.Status.Should().Be(AssignmentStatus.Proposed);
+
+        va.Status = AssignmentStatus.Approved;
+        va.ApprovedAt = DateTime.UtcNow;
+
+        va.Status.Should().Be(AssignmentStatus.Approved);
+        va.ApprovedAt.Should().NotBeNull();
+    }
 }

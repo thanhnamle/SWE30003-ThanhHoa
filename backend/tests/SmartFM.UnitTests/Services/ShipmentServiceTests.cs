@@ -157,7 +157,7 @@ public class ShipmentServiceTests
     }
 
     [Fact]
-    public async Task AssignResourcesAsync_DriverOnLeave_ShouldThrow_BusinessRuleException()
+    public async Task DriverOnLeave_ShouldThrow_BusinessRuleException()
     {
         var shipmentId = Guid.NewGuid();
         var vehicleId = Guid.NewGuid();
@@ -176,5 +176,48 @@ public class ShipmentServiceTests
         var act = () => _shipmentService.AssignResourcesAsync(shipmentId, dto);
         await act.Should().ThrowAsync<BusinessRuleException>()
             .WithMessage("Driver LIC-12345 is on leave.");
+    }
+
+    [Fact]
+    public async Task UpdateShipmentStatusAsync_ValidStatus_ShouldUpdateStatus()
+    {
+        var shipmentId = Guid.NewGuid();
+        var shipment = new Shipment { Id = shipmentId, Status = ShipmentStatus.Preparing };
+        _shipmentRepoMock.Setup(r => r.GetByIdAsync(shipmentId)).ReturnsAsync(shipment);
+
+        await _shipmentService.UpdateShipmentStatusAsync(shipmentId, ShipmentStatus.InTransit);
+
+        shipment.Status.Should().Be(ShipmentStatus.InTransit);
+        _shipmentRepoMock.Verify(r => r.UpdateAsync(shipment), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateShipmentStatusAsync_ReadyForPickup_ShouldAlsoValidateOrder()
+    {
+        var shipmentId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        var shipment = new Shipment { Id = shipmentId, OrderId = orderId, Status = ShipmentStatus.Preparing };
+        var order = new Order { Id = orderId, Status = OrderStatus.Pending };
+
+        _shipmentRepoMock.Setup(r => r.GetByIdAsync(shipmentId)).ReturnsAsync(shipment);
+        _orderRepoMock.Setup(r => r.GetByIdAsync(orderId)).ReturnsAsync(order);
+
+        await _shipmentService.UpdateShipmentStatusAsync(shipmentId, ShipmentStatus.ReadyForPickup);
+
+        shipment.Status.Should().Be(ShipmentStatus.ReadyForPickup);
+        order.Status.Should().Be(OrderStatus.Validated);
+
+        _shipmentRepoMock.Verify(r => r.UpdateAsync(shipment), Times.Once);
+        _orderRepoMock.Verify(r => r.UpdateAsync(order), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateShipmentStatusAsync_ShipmentNotFound_ShouldThrow()
+    {
+        var shipmentId = Guid.NewGuid();
+        _shipmentRepoMock.Setup(r => r.GetByIdAsync(shipmentId)).ReturnsAsync((Shipment?)null);
+
+        var act = () => _shipmentService.UpdateShipmentStatusAsync(shipmentId, ShipmentStatus.InTransit);
+        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("Shipment not found.");
     }
 }

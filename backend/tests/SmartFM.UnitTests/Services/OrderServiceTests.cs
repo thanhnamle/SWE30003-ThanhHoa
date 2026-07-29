@@ -194,4 +194,61 @@ public class OrderServiceTests
         savedOrder.Should().NotBeNull();
         savedOrder!.SpecialHandlingNotes.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task ApproveOrderAsync_PendingOrder_ShouldChangeToValidated_AndEnsureShipmentExists()
+    {
+        var orderId = Guid.NewGuid();
+        var order = new Order { Id = orderId, Status = OrderStatus.Pending };
+        _orderRepoMock.Setup(r => r.GetByIdAsync(orderId)).ReturnsAsync(order);
+        _shipmentRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Shipment>());
+
+        await _orderService.ApproveOrderAsync(orderId);
+
+        order.Status.Should().Be(OrderStatus.Validated);
+        _orderRepoMock.Verify(r => r.UpdateAsync(order), Times.Once);
+        _shipmentRepoMock.Verify(r => r.AddAsync(It.Is<Shipment>(s => s.OrderId == orderId && s.Status == ShipmentStatus.Preparing)), Times.Once);
+    }
+
+    [Fact]
+    public async Task ApproveOrderAsync_NotPendingOrder_ShouldThrow()
+    {
+        var orderId = Guid.NewGuid();
+        var order = new Order { Id = orderId, Status = OrderStatus.Validated };
+        _orderRepoMock.Setup(r => r.GetByIdAsync(orderId)).ReturnsAsync(order);
+
+        var act = () => _orderService.ApproveOrderAsync(orderId);
+        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("Only Pending orders can be approved.");
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_ValidOrder_ShouldChangeToCancelled_AndDeleteShipmentsAndInvoices()
+    {
+        var orderId = Guid.NewGuid();
+        var order = new Order { Id = orderId, Status = OrderStatus.Pending };
+        var shipment = new Shipment { Id = Guid.NewGuid(), OrderId = orderId };
+        var invoice = new Invoice { Id = Guid.NewGuid(), OrderId = orderId };
+
+        _orderRepoMock.Setup(r => r.GetByIdAsync(orderId)).ReturnsAsync(order);
+        _shipmentRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Shipment> { shipment });
+        _invoiceRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Invoice> { invoice });
+
+        await _orderService.CancelOrderAsync(orderId);
+
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        _orderRepoMock.Verify(r => r.UpdateAsync(order), Times.Once);
+        _shipmentRepoMock.Verify(r => r.DeleteAsync(shipment.Id), Times.Once);
+        _invoiceRepoMock.Verify(r => r.DeleteAsync(invoice.Id), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_AlreadyCancelledOrder_ShouldThrow()
+    {
+        var orderId = Guid.NewGuid();
+        var order = new Order { Id = orderId, Status = OrderStatus.Cancelled };
+        _orderRepoMock.Setup(r => r.GetByIdAsync(orderId)).ReturnsAsync(order);
+
+        var act = () => _orderService.CancelOrderAsync(orderId);
+        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("Order is already cancelled.");
+    }
 }
