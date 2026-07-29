@@ -94,8 +94,6 @@ public class OrderService : IOrderService
 
         // Explicitly add related entities to guarantee they are saved
         await _orderRepository.AddAsync(order);
-        await _shipmentRepository.AddAsync(shipment);
-        await _invoiceRepository.AddAsync(invoice);
 
         await _notificationService.CreateNotificationAsync(
             "New Order Created",
