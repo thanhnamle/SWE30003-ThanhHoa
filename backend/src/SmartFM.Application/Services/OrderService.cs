@@ -16,19 +16,25 @@ public class OrderService : IOrderService
     private readonly IRepository<Customer> _customerRepository;
     private readonly IRepository<Branch> _branchRepository;
     private readonly INotificationService _notificationService;
+    private readonly IRepository<Shipment> _shipmentRepository;
+    private readonly IRepository<Invoice> _invoiceRepository;
 
     public OrderService(
         IRepository<Order> orderRepository,
         IRepository<TransportOffering> offeringRepository,
         IRepository<Customer> customerRepository,
         IRepository<Branch> branchRepository,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IRepository<Shipment> shipmentRepository,
+        IRepository<Invoice> invoiceRepository)
     {
         _orderRepository = orderRepository;
         _offeringRepository = offeringRepository;
         _customerRepository = customerRepository;
         _branchRepository = branchRepository;
         _notificationService = notificationService;
+        _shipmentRepository = shipmentRepository;
+        _invoiceRepository = invoiceRepository;
     }
 
     private async Task ValidateOrderRequestAsync(CreateOrderDto request, TransportOffering offering)
@@ -169,5 +175,19 @@ public class OrderService : IOrderService
 
         order.Status = OrderStatus.Cancelled;
         await _orderRepository.UpdateAsync(order);
+
+        var shipments = await _shipmentRepository.GetAllAsync();
+        var orderShipments = shipments.Where(s => s.OrderId == id).ToList();
+        foreach (var shipment in orderShipments)
+        {
+            await _shipmentRepository.DeleteAsync(shipment.Id);
+        }
+
+        var invoices = await _invoiceRepository.GetAllAsync();
+        var orderInvoices = invoices.Where(i => i.OrderId == id).ToList();
+        foreach (var invoice in orderInvoices)
+        {
+            await _invoiceRepository.DeleteAsync(invoice.Id);
+        }
     }
 }

@@ -220,6 +220,16 @@ public class ShipmentService : IShipmentService
         shipment.Status = status;
         await _shipmentRepository.UpdateAsync(shipment);
 
+        if (status == ShipmentStatus.ReadyForPickup)
+        {
+            var order = await _orderRepository.GetByIdAsync(shipment.OrderId);
+            if (order != null && order.Status != OrderStatus.Validated)
+            {
+                order.Status = OrderStatus.Validated;
+                await _orderRepository.UpdateAsync(order);
+            }
+        }
+
         return new ShipmentResponseDto
         {
             Id = shipment.Id,

@@ -23,6 +23,8 @@ public class OrderServiceTests
     private readonly Mock<IRepository<Customer>> _customerRepoMock;
     private readonly Mock<IRepository<Branch>> _branchRepoMock;
     private readonly Mock<INotificationService> _notificationServiceMock;
+    private readonly Mock<IRepository<Shipment>> _shipmentRepoMock;
+    private readonly Mock<IRepository<Invoice>> _invoiceRepoMock;
     private readonly OrderService _orderService;
 
     public OrderServiceTests()
@@ -32,6 +34,8 @@ public class OrderServiceTests
         _customerRepoMock = new Mock<IRepository<Customer>>();
         _branchRepoMock = new Mock<IRepository<Branch>>();
         _notificationServiceMock = new Mock<INotificationService>();
+        _shipmentRepoMock = new Mock<IRepository<Shipment>>();
+        _invoiceRepoMock = new Mock<IRepository<Invoice>>();
 
         _offeringRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new TransportOffering { BaseFee = 500000, FeePerKm = 15000, IsActive = true, MaxCapacityKg = 1000m });
@@ -47,7 +51,9 @@ public class OrderServiceTests
             _offeringRepoMock.Object,
             _customerRepoMock.Object,
             _branchRepoMock.Object,
-            _notificationServiceMock.Object
+            _notificationServiceMock.Object,
+            _shipmentRepoMock.Object,
+            _invoiceRepoMock.Object
         );
     }
 
