@@ -6,6 +6,7 @@ using SmartFM.Application;
 using SmartFM.Infrastructure;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,6 +107,10 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<SmartFM.Infrastructure.Persistence.SmartFmDbContext>();
+    
+    // Áp dụng các thay đổi cấu trúc bảng (Migrations) vào Database (cực kỳ quan trọng khi deploy lên DB mới)
+    dbContext.Database.Migrate();
+
     if (dbContext.TransportOfferings.Count() < 4)
     {
         dbContext.TransportOfferings.AddRange(
