@@ -25,6 +25,8 @@ export function ExceptionModal({ shipmentId, onClose }: ExceptionModalProps) {
     mutationFn: (data: { type: string; description: string }) => trackingApi.logException(shipmentId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions', shipmentId] });
+      queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       setShowCreate(false);
       setNewDesc('');
     }
@@ -32,7 +34,11 @@ export function ExceptionModal({ shipmentId, onClose }: ExceptionModalProps) {
 
   const resolveMutation = useMutation({
     mutationFn: trackingApi.resolveException,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exceptions', shipmentId] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exceptions', shipmentId] });
+      queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    }
   });
 
   const holdMutation = useMutation({

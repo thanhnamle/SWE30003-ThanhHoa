@@ -26,6 +26,28 @@ public class ShipmentsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetShipments()
     {
+        // Auto-heal missing Shipment entities for any existing/seeded non-cancelled orders
+        var existingOrderIds = await _dbContext.Set<Shipment>().Select(s => s.OrderId).ToListAsync();
+        var missingOrders = await _dbContext.Set<Order>()
+            .Where(o => o.Status != OrderStatus.Cancelled && !existingOrderIds.Contains(o.Id))
+            .ToListAsync();
+
+        if (missingOrders.Any())
+        {
+            foreach (var order in missingOrders)
+            {
+                var newShipment = new Shipment
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    Status = ShipmentStatus.Preparing,
+                    CreatedAt = order.CreatedAt
+                };
+                await _dbContext.Set<Shipment>().AddAsync(newShipment);
+            }
+            await _dbContext.SaveChangesAsync();
+        }
+
         var shipments = await _dbContext.Set<Shipment>()
             .Include(s => s.VehicleAssignment!).ThenInclude(v => v.Vehicle)
             .Include(s => s.DriverAssignment!).ThenInclude(d => d.Driver)

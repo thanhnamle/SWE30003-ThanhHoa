@@ -128,16 +128,6 @@ export const Footer = () => {
             <a href="#" className="hover:text-slate-300 transition-colors">Terms</a>
             <a href="#" className="hover:text-slate-300 transition-colors">Cookies</a>
 
-            {/* Back to top */}
-            <motion.button
-              onClick={scrollToTop}
-              whileHover={{ y: -3, scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/50 transition-colors"
-              aria-label="Back to top"
-            >
-              <ArrowUp className="h-4 w-4" />
-            </motion.button>
           </div>
         </div>
 

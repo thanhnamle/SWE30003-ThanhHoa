@@ -94,14 +94,6 @@ export function Orders() {
     }
   });
 
-  const approveMutation = useMutation({
-    mutationFn: orderApi.approveOrder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['shipments'] });
-    }
-  });
-
   const onSubmit = (data: OrderFormValues) => {
     if (selectedOffering && data.cargoWeightKg > selectedOffering.maxCapacityKg) {
       setError('cargoWeightKg', {
@@ -463,7 +455,6 @@ export function Orders() {
                     <td className="px-5 py-4">
                       {order.status === 'Pending' && !shipments?.some(s => s.orderId === order.id && s.status !== 'Preparing') && (
                         <div className="flex gap-2">
-                          <button onClick={() => approveMutation.mutate(order.id)} disabled={approveMutation.isPending} className="p-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors disabled:opacity-50" title="Approve Order"><CheckCircle2 className="w-4 h-4" /></button>
                           <button onClick={() => handleEditClick(order)} className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="Edit Order"><Edit2 className="w-4 h-4" /></button>
                           <button onClick={() => cancelMutation.mutate(order.id)} disabled={cancelMutation.isPending} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50" title="Cancel Order"><XCircle className="w-4 h-4" /></button>
                         </div>

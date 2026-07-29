@@ -86,6 +86,7 @@ export function Shipments() {
     mutationFn: shipmentApi.assignResources,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       setTimeout(() => {
         setSelectedShipment(null);
         reset();

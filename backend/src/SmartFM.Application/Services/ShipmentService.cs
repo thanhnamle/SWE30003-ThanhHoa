@@ -187,6 +187,12 @@ public class ShipmentService : IShipmentService
             shipment.Status = ShipmentStatus.ReadyForPickup;
             await _shipmentRepository.UpdateAsync(shipment);
 
+            if (order != null && order.Status != OrderStatus.Validated)
+            {
+                order.Status = OrderStatus.Validated;
+                await _orderRepository.UpdateAsync(order);
+            }
+
             await _unitOfWork.CommitAsync();
 
             return new ShipmentResponseDto
