@@ -8,6 +8,8 @@ public class DeliveryExceptionConfiguration : IEntityTypeConfiguration<DeliveryE
 {
     public void Configure(EntityTypeBuilder<DeliveryException> builder)
     {
+        builder.ToTable("DeliveryException");
+
         builder.HasOne(d => d.Shipment)
             .WithMany(s => s.DeliveryExceptions)
             .HasForeignKey(d => d.ShipmentId);

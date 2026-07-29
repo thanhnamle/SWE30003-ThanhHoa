@@ -47,7 +47,7 @@ namespace SmartFM.Application.Services
                     Type = "Customer",
                     Title = c.Name ?? c.CompanyName ?? "Unnamed Customer",
                     Subtitle = c.CompanyName ?? string.Empty,
-                    Url = "/customers"
+                    Url = "/dashboard/customers"
                 });
             }
 
@@ -64,7 +64,7 @@ namespace SmartFM.Application.Services
                     Type = "Shipment",
                     Title = $"SHP-{s.Id.ToString().Substring(0, 8)}",
                     Subtitle = $"Status: {s.Status}",
-                    Url = "/tracking"
+                    Url = "/dashboard/tracking"
                 });
             }
 
@@ -82,7 +82,7 @@ namespace SmartFM.Application.Services
                     Type = "Vehicle",
                     Title = v.PlateNumber,
                     Subtitle = $"Type: {v.Type}",
-                    Url = "/vehicles"
+                    Url = "/dashboard/vehicles"
                 });
             }
 

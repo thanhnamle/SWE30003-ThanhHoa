@@ -213,6 +213,9 @@ namespace SmartFM.Infrastructure.Migrations
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid>("ShipmentId")
                         .HasColumnType("char(36)");
 
@@ -226,7 +229,7 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("ShipmentId");
 
-                    b.ToTable("DeliveryExceptions");
+                    b.ToTable("DeliveryException");
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Driver", b =>
@@ -262,7 +265,13 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.ToTable("Drivers");
+                    b.HasIndex("IsOnLeave")
+                        .HasDatabaseName("IX_Driver_IsOnLeave");
+
+                    b.ToTable("Drivers", t =>
+                        {
+                            t.HasCheckConstraint("CK_Driver_MaxWeeklyHours", "`MaxWeeklyHours` >= 1 AND `MaxWeeklyHours` <= 168");
+                        });
 
                     b.HasData(
                         new
@@ -304,10 +313,11 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DriverId");
-
                     b.HasIndex("ShipmentId")
                         .IsUnique();
+
+                    b.HasIndex("DriverId", "Status")
+                        .HasDatabaseName("IX_DriverAssignment_DriverId_Status");
 
                     b.ToTable("DriverAssignments");
                 });
@@ -457,6 +467,36 @@ namespace SmartFM.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("PickupDeliveryOptions");
+                });
+
+            modelBuilder.Entity("SmartFM.Domain.Entities.ProofOfDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ProofImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ReceivedByName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("ShipmentId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipmentId")
+                        .IsUnique();
+
+                    b.ToTable("ProofOfDelivery");
                 });
 
             modelBuilder.Entity("SmartFM.Domain.Entities.Receipt", b =>
@@ -628,6 +668,9 @@ namespace SmartFM.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
+                    b.HasIndex("IsUnderMaintenance")
+                        .HasDatabaseName("IX_Vehicle_IsUnderMaintenance");
+
                     b.ToTable("Vehicles");
 
                     b.HasData(
@@ -670,7 +713,8 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasIndex("ShipmentId")
                         .IsUnique();
 
-                    b.HasIndex("VehicleId");
+                    b.HasIndex("VehicleId", "Status")
+                        .HasDatabaseName("IX_VehicleAssignment_VehicleId_Status");
 
                     b.ToTable("VehicleAssignments");
                 });
@@ -691,7 +735,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.Branch", "Branch")
                         .WithMany("Drivers")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
@@ -732,7 +776,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.Branch", "Branch")
                         .WithMany("Orders")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SmartFM.Domain.Entities.Customer", "Customer")
@@ -744,7 +788,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.TransportOffering", "TransportOffering")
                         .WithMany("Orders")
                         .HasForeignKey("TransportOfferingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
@@ -770,6 +814,17 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.Shipment", "Shipment")
                         .WithOne("PickupDeliveryOption")
                         .HasForeignKey("SmartFM.Domain.Entities.PickupDeliveryOption", "ShipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shipment");
+                });
+
+            modelBuilder.Entity("SmartFM.Domain.Entities.ProofOfDelivery", b =>
+                {
+                    b.HasOne("SmartFM.Domain.Entities.Shipment", "Shipment")
+                        .WithOne("ProofOfDelivery")
+                        .HasForeignKey("SmartFM.Domain.Entities.ProofOfDelivery", "ShipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -814,7 +869,7 @@ namespace SmartFM.Infrastructure.Migrations
                     b.HasOne("SmartFM.Domain.Entities.Branch", "Branch")
                         .WithMany("Vehicles")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
@@ -882,6 +937,8 @@ namespace SmartFM.Infrastructure.Migrations
                     b.Navigation("DriverAssignment");
 
                     b.Navigation("PickupDeliveryOption");
+
+                    b.Navigation("ProofOfDelivery");
 
                     b.Navigation("TrackingRecords");
 

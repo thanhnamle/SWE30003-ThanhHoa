@@ -4,5 +4,5 @@ namespace SmartFM.Application.Interfaces;
 
 public interface IPaymentService
 {
-    Task<PaymentResponseDto> ProcessPaymentAsync(Guid invoiceId, ProcessPaymentDto request);
+    Task<ReceiptResponseDto> ProcessPaymentAsync(Guid invoiceId, ProcessPaymentDto request);
 }

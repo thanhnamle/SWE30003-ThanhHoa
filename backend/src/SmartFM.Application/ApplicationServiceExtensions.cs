@@ -16,6 +16,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ISearchService, SearchService>();
+        services.AddScoped<IReportService, ReportService>();
 
         return services;
     }

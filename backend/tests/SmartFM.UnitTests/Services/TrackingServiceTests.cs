@@ -20,16 +20,22 @@ public class TrackingServiceTests
 {
     private readonly Mock<IRepository<Shipment>> _shipmentRepoMock;
     private readonly Mock<IRepository<DeliveryException>> _exceptionRepoMock;
+    private readonly Mock<IRepository<TrackingRecord>> _trackingRepoMock;
+    private readonly Mock<IRepository<Order>> _orderRepoMock;
     private readonly TrackingService _trackingService;
 
     public TrackingServiceTests()
     {
         _shipmentRepoMock = new Mock<IRepository<Shipment>>();
         _exceptionRepoMock = new Mock<IRepository<DeliveryException>>();
+        _trackingRepoMock = new Mock<IRepository<TrackingRecord>>();
+        _orderRepoMock = new Mock<IRepository<Order>>();
 
         _trackingService = new TrackingService(
             _shipmentRepoMock.Object,
-            _exceptionRepoMock.Object
+            _exceptionRepoMock.Object,
+            _trackingRepoMock.Object,
+            _orderRepoMock.Object
         );
     }
 

@@ -26,6 +26,7 @@ public static class InfrastructureServiceExtensions
         }
 
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

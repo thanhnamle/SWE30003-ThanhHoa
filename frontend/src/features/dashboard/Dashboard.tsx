@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import { shipmentApi } from "../shipments/api/shipmentApi";
 import { paymentApi } from "../payments/api/paymentApi";
+import { dashboardApi } from "./api/dashboardApi";
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -20,40 +21,26 @@ export function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      shipmentApi.getVehicles(),
-      shipmentApi.getDrivers(),
+      dashboardApi.getOperationalReport(),
       shipmentApi.getShipments(),
       paymentApi.getInvoices()
-    ]).then(([vehicles, drivers, shipments, invoices]) => {
-      const totalRevenue = invoices.filter(i => i.status === 'Paid').reduce((sum, inv) => sum + inv.amount, 0);
-      setStats({
-        vehicles: vehicles.length,
-        drivers: drivers.length,
-        orders: shipments.length,
-        revenue: totalRevenue || 1840000,
-        customers: 5
-      });
-
-      const statusCounts = shipments.reduce((acc, s) => {
-        acc[s.status] = (acc[s.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      
-      const statusData = Object.keys(statusCounts).map(k => ({ name: k, value: statusCounts[k] }));
-      setShipmentStatusData(statusData.length > 0 ? statusData : [
+    ]).then(([report, shipments, invoices]) => {
+      setStats(report.stats);
+      setShipmentStatusData(report.shipmentStatusData.length > 0 ? report.shipmentStatusData : [
         { name: 'Pending', value: 0 },
         { name: 'InTransit', value: 0 },
         { name: 'Delivered', value: 0 },
       ]);
+      setRevenueData(report.revenueData);
 
       const sortedShipments = [...shipments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
       const orders = sortedShipments.map(s => {
         const inv = invoices.find(i => i.orderId === s.orderId);
-        const origin = s.pickupDeliveryOption?.pickupAddress || 'Unknown';
-        const destination = s.pickupDeliveryOption?.deliveryAddress || 'Unknown';
+        const origin = s.pickupDeliveryOption?.pickupAddress?.split(',')[0] || 'Unknown';
+        const destination = s.pickupDeliveryOption?.deliveryAddress?.split(',')[0] || 'Unknown';
         return {
           id: s.id.split('-')[0].toUpperCase(),
-          customer: s.orderId.split('-')[0].toUpperCase(),
+          customer: s.order?.customerName || 'Unknown Customer',
           route: origin + ' → ' + destination,
           status: s.status,
           amount: inv ? inv.amount : 0
@@ -62,14 +49,6 @@ export function Dashboard() {
       setRecentOrders(orders.length > 0 ? orders : [
         { id: 'ORD-10482', customer: 'VinFast Assembly Co.', route: 'HCM → Hanoi', status: 'In Transit', amount: 4280 }
       ]);
-
-      const revData = Array.from({length: 12}, (_, i) => {
-         const monthName = new Date(0, i).toLocaleString('en-US', {month: 'short'});
-         const monthInvoices = invoices.filter(inv => inv.status === 'Paid' && new Date(inv.issuedAt).getMonth() === i);
-         const val = monthInvoices.reduce((sum, inv) => sum + inv.amount, 0) / 1000;
-         return { name: monthName, value: val > 0 ? val : Math.floor(Math.random() * 50) + 20 };
-      });
-      setRevenueData(revData);
     }).catch(err => {
       console.error("Dashboard failed to load data:", err);
       // Fallback data in case of error
@@ -325,7 +304,7 @@ export function Dashboard() {
             <div className="sfm-card sfm-enter lg:col-span-2 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm" style={{ animationDelay: '0.56s' }}>
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-gray-900 text-base">Recent orders</h3>
-                <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">View all</button>
+                <button onClick={() => navigate('/dashboard/shipments')} className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">View all</button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">

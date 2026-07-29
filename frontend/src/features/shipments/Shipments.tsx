@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Truck, User, MapPin, Loader2, CheckCircle2, Clock, Sparkles, X, Edit2, Trash2, Package, FileText, AlertTriangle, Car, Snowflake } from 'lucide-react';
 import { shipmentApi, Shipment } from './api/shipmentApi';
+import { ExceptionModal } from './components/ExceptionModal';
 
 export const getVehicleIcon = (type?: string, className = "w-5 h-5") => {
   switch (type?.toLowerCase()) {
@@ -52,6 +53,7 @@ export function Shipments() {
   const [editStatus, setEditStatus] = useState<string>('');
   const [viewingShipment, setViewingShipment] = useState<Shipment | null>(null);
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null);
+  const [exceptionShipmentId, setExceptionShipmentId] = useState<string | null>(null);
 
   const { data: shipments, isLoading: isLoadingShipments } = useQuery({
     queryKey: ['shipments'],
@@ -84,6 +86,7 @@ export function Shipments() {
     mutationFn: shipmentApi.assignResources,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       setTimeout(() => {
         setSelectedShipment(null);
         reset();
@@ -119,6 +122,18 @@ export function Shipments() {
       }
     }
 
+    // Validate Active Assignment Conflicts
+    const activeShipments = shipments?.filter(s => s.status !== 'Delivered' && s.id !== selectedShipment.id) || [];
+      
+    const vehicleInUse = activeShipments.some(s => s.vehicleAssignment?.vehicleId === data.vehicleId);
+    if (vehicleInUse && selectedVehicle) {
+      setError('vehicleId', {
+        type: 'manual',
+        message: `Vehicle ${selectedVehicle.plateNumber} is currently assigned to another active shipment.`
+      });
+      hasError = true;
+    }
+
     // Validate Driver Availability & License Class
     const selectedDriver = drivers?.find(d => d.id === data.driverId);
     if (selectedDriver) {
@@ -137,6 +152,15 @@ export function Shipments() {
           });
           hasError = true;
         }
+      }
+
+      const driverInUse = activeShipments.some(s => s.driverAssignment?.driverId === data.driverId);
+      if (driverInUse && selectedDriver) {
+        setError('driverId', {
+          type: 'manual',
+          message: `Driver ${selectedDriver.fullName} is currently assigned to another active shipment.`
+        });
+        hasError = true;
       }
     }
 
@@ -247,6 +271,7 @@ export function Shipments() {
                   <thead className="bg-gray-50/80 border-b border-gray-100 backdrop-blur-md">
                     <tr>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Shipment ID</th>
+                      <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Route</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Assigned Resources</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
@@ -264,8 +289,17 @@ export function Shipments() {
                           <td className="px-6 py-5">
                             <div className="flex items-center gap-3">
                               <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-gray-300 group-hover:bg-gray-400'} transition-colors`} />
-                              <span className={`text-sm font-bold font-mono tracking-tight ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
-                                {shipment.id.split('-')[0]}...
+                              <div>
+                                <p className={`font-bold text-sm ${isSelected ? 'text-blue-700' : 'text-gray-900'} transition-colors`}>{shipment.id.split('-')[0]}</p>
+                                <p className="text-xs text-gray-500 font-medium">{new Date(shipment.createdAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-gray-900 text-sm">{shipment.order?.customerName || 'Unknown Customer'}</span>
+                              <span className="text-xs text-gray-500 max-w-[200px] truncate" title={`${shipment.pickupDeliveryOption?.pickupAddress || 'Pending'} → ${shipment.pickupDeliveryOption?.deliveryAddress || 'Pending'}`}>
+                                {shipment.pickupDeliveryOption?.pickupAddress?.split(',')[0] || 'Pending'} → {shipment.pickupDeliveryOption?.deliveryAddress?.split(',')[0] || 'Pending'}
                               </span>
                             </div>
                           </td>
@@ -333,12 +367,20 @@ export function Shipments() {
                                   </button>
                                 )}
                                 {shipment.status !== 'Preparing' && (
-                                  <button 
-                                    onClick={() => setViewingShipment(shipment)}
-                                    className="px-4 py-2 bg-white border-2 border-gray-100 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:shadow-md rounded-xl text-sm font-bold transition-all duration-300"
-                                  >
-                                    View Details
-                                  </button>
+                                  <>
+                                    <button 
+                                      onClick={() => setViewingShipment(shipment)}
+                                      className="px-4 py-2 bg-white border-2 border-gray-100 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:shadow-md rounded-xl text-sm font-bold transition-all duration-300"
+                                    >
+                                      View Details
+                                    </button>
+                                    <button 
+                                      onClick={() => setExceptionShipmentId(shipment.id)}
+                                      className="px-4 py-2 bg-red-50 border-2 border-red-100 text-red-600 hover:border-red-500 hover:text-red-700 hover:shadow-md rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-1.5"
+                                    >
+                                      <AlertTriangle className="w-4 h-4" /> Issues
+                                    </button>
+                                  </>
                                 )}
                                 <button 
                                   onClick={() => { setEditingShipmentId(shipment.id); setEditStatus(shipment.status); }}
@@ -786,6 +828,13 @@ export function Shipments() {
           </div>
         </div>,
         document.body
+      )}
+      {/* Exception Modal */}
+      {exceptionShipmentId && (
+        <ExceptionModal 
+          shipmentId={exceptionShipmentId} 
+          onClose={() => setExceptionShipmentId(null)} 
+        />
       )}
     </>
   );
