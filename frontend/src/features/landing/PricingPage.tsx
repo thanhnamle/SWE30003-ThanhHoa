@@ -5,7 +5,7 @@ import { ScrollIndicator } from './components/ScrollIndicator';
 import { ScrollBlobs } from './components/ScrollBlobs';
 import { HelpCircle, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const faqs = [
   {
@@ -28,6 +28,11 @@ const faqs = [
 
 export const PricingPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  // Scroll to top when page loads to prevent retaining scroll position from previous page
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []);
 
   return (
     <motion.div

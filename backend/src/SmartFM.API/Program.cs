@@ -27,7 +27,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        var origins = new List<string> { "http://localhost:5173", "http://localhost:4173", "http://localhost:5174" };
+        var origins = new List<string> { 
+            "http://localhost:5173", 
+            "http://localhost:4173", 
+            "http://localhost:5174",
+            "https://smartfm-psi.vercel.app" // Vercel production URL
+        };
         var frontendUrl = builder.Configuration["FrontendUrl"];
         if (!string.IsNullOrWhiteSpace(frontendUrl))
         {

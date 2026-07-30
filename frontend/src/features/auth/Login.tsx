@@ -248,7 +248,7 @@ export function Login() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Email</label>
                 <div className="relative group">
-                  <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
+                  <Mail className="absolute z-10 pointer-events-none left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
                   <input
                     type="email"
                     {...register('email')}
@@ -267,7 +267,7 @@ export function Login() {
                   <label className="text-sm font-medium text-gray-700">Password</label>
                 </div>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
+                  <Lock className="absolute z-10 pointer-events-none left-3.5 top-3.5 w-4 h-4 text-gray-400 transition-colors group-focus-within:text-blue-500" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     {...register('password')}
@@ -281,7 +281,7 @@ export function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute z-10 right-3.5 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -311,10 +311,6 @@ export function Login() {
               </Link>
             </p>
           </div>
-
-          <p className="text-center text-xs text-gray-400 mt-6 sfm-enter" style={{ animationDelay: '0.2s' }}>
-            Demo account: admin@smartfm.vn / Admin123!
-          </p>
         </div>
       </div>
     </motion.div>

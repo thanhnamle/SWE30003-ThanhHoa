@@ -65,7 +65,7 @@ export const Pricing = () => {
   ];
 
   return (
-    <section id="pricing" className="py-24 bg-slate-50/70 border-t border-slate-200/80 relative overflow-hidden">
+    <section id="pricing" className="scroll-mt-24 py-24 bg-slate-50/70 border-t border-slate-200/80 relative overflow-hidden">
       {/* Background Decorative Blur Orbs */}
       <div className="absolute top-20 left-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl pointer-events-none" />

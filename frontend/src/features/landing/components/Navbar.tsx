@@ -54,20 +54,18 @@ export const Navbar = () => {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
-        scrolled
+      className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${scrolled
           ? 'border-slate-200 bg-white/95 backdrop-blur-md shadow-sm'
           : 'border-transparent bg-white/80 backdrop-blur-md'
-      }`}
+        }`}
     >
       <div
-        className={`container mx-auto flex items-center justify-between px-6 lg:px-12 transition-all duration-300 ${
-          scrolled ? 'h-16' : 'h-20'
-        }`}
+        className={`container mx-auto flex items-center justify-between px-6 lg:px-12 transition-all duration-300 ${scrolled ? 'h-16' : 'h-20'
+          }`}
       >
         {/* Brand Logo */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           onClick={(e) => {
             if (location.pathname === '/') {
               e.preventDefault();

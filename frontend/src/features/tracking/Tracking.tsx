@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MapPin, Navigation, CheckSquare, Upload, Loader2, CheckCircle2, PackageCheck, Truck, ArrowRight, ShieldCheck, Compass, Clock, Package } from 'lucide-react';
 import { trackingApi } from './api/trackingApi';
@@ -6,166 +6,81 @@ import { Shipment } from '../shipments/api/shipmentApi';
 import { Modal } from '@/components/common/Modal';
 
 function ShipmentMiniMap({ shipment }: { shipment: Shipment }) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const leafletMap = useRef<any>(null);
-  // Helper to parse Vietnam coordinates from address string
-  const getCoordsForCity = (address?: string): [number, number] => {
-    const a = (address || '').toLowerCase();
-    if (a.includes('đà nẵng') || a.includes('da nang')) return [16.0544, 108.2022];
-    if (a.includes('hải phòng') || a.includes('hai phong')) return [20.8449, 106.6881];
-    if (a.includes('hà nội') || a.includes('hanoi')) return [21.0285, 105.8542];
-    if (a.includes('bình dương') || a.includes('binh duong')) return [10.9805, 106.6519];
-    if (a.includes('tân bình') || a.includes('hồ chí minh') || a.includes('hcm') || a.includes('quận 1')) return [10.7769, 106.7009];
-    // Default fallback
-    return [10.7769, 106.7009];
-  };
-
-  useEffect(() => {
-    // 1. Inject Leaflet CSS if not already present
-    if (!document.getElementById('leaflet-css-cdn')) {
-      const link = document.createElement('link');
-      link.id = 'leaflet-css-cdn';
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      document.head.appendChild(link);
-    }
-
-    // 2. Inject Leaflet JS if not already loaded
-    const initLeaflet = () => {
-      const L = (window as any).L;
-      if (!L || !mapRef.current) return;
-
-      if (leafletMap.current) {
-        leafletMap.current.remove();
-        leafletMap.current = null;
-      }
-
-      const pickupAddr = shipment.pickupDeliveryOption?.pickupAddress || 'Ho Chi Minh City';
-      const deliveryAddr = shipment.pickupDeliveryOption?.deliveryAddress || 'Hanoi';
-
-      let pCoords = getCoordsForCity(pickupAddr);
-      let dCoords = getCoordsForCity(deliveryAddr);
-
-      // Avoid overlapping if same coordinates
-      if (pCoords[0] === dCoords[0] && pCoords[1] === dCoords[1]) {
-        dCoords = [pCoords[0] + 0.1, pCoords[1] + 0.1];
-      }
-
-      // Initialize Leaflet Map
-      const map = L.map(mapRef.current, {
-        zoomControl: false,
-        attributionControl: false,
-        scrollWheelZoom: false
-      });
-      leafletMap.current = map;
-
-      // Add OpenStreetMap Tile Layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        subdomains: ['a', 'b', 'c']
-      }).addTo(map);
-
-      // Custom Leaflet Icons
-      const pickupDivIcon = L.divIcon({
-        className: 'leaflet-custom-pickup',
-        html: `<div style="background:#f59e0b;color:#fff;padding:6px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(245,158,11,0.8);display:flex;align-items:center;justify-content:center;width:32px;height:32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      });
-
-      const deliveryDivIcon = L.divIcon({
-        className: 'leaflet-custom-delivery',
-        html: `<div style="background:#10b981;color:#fff;padding:6px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(16,185,129,0.8);display:flex;align-items:center;justify-content:center;width:32px;height:32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      });
-
-      // Place Pickup & Delivery Markers
-      L.marker(pCoords, { icon: pickupDivIcon }).addTo(map).bindTooltip(`📍 ${pickupAddr.slice(0, 20)}`, { permanent: true, direction: 'top', className: 'leaflet-tooltip-custom' });
-      L.marker(dCoords, { icon: deliveryDivIcon }).addTo(map).bindTooltip(`🎯 ${deliveryAddr.slice(0, 20)}`, { permanent: true, direction: 'top', className: 'leaflet-tooltip-custom' });
-
-      // Real Geographic Polyline Path
-      L.polyline([pCoords, dCoords], {
-        color: '#2563eb',
-        weight: 4,
-        dashArray: '8, 8',
-        opacity: 0.8
-      }).addTo(map);
-
-      // Compute Truck Position along the Real Polyline
-      const progress = shipment.status === 'Delivered' ? 1.0 : shipment.status === 'InTransit' ? 0.6 : 0.05;
-      const truckLat = pCoords[0] + (dCoords[0] - pCoords[0]) * progress;
-      const truckLng = pCoords[1] + (dCoords[1] - pCoords[1]) * progress;
-
-      const truckDivIcon = L.divIcon({
-        className: 'leaflet-custom-truck',
-        html: `<div style="background:#2563eb;color:#fff;padding:7px;border-radius:12px;border:2px solid #fff;box-shadow:0 0 16px rgba(37,99,235,0.9);display:flex;align-items:center;justify-content:center;width:36px;height:36px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18]
-      });
-
-      L.marker([truckLat, truckLng], { icon: truckDivIcon }).addTo(map).bindTooltip(
-        shipment.status === 'InTransit' ? '🚚 Live Transit (58 km/h)' : shipment.status === 'Delivered' ? '✅ Delivered' : '⏳ Ready for Pickup',
-        { permanent: true, direction: 'bottom', className: 'leaflet-tooltip-truck' }
-      );
-
-      // Auto-fit Map Viewport to include both cities cleanly!
-      const bounds = L.latLngBounds([pCoords, dCoords]);
-      map.fitBounds(bounds, { padding: [45, 45] });
-      console.log('Map loaded successfully');
-    };
-
-    if ((window as any).L) {
-      initLeaflet();
-    } else {
-      if (!document.getElementById('leaflet-js-cdn')) {
-        const script = document.createElement('script');
-        script.id = 'leaflet-js-cdn';
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload = initLeaflet;
-        document.head.appendChild(script);
-      } else {
-        const interval = setInterval(() => {
-          if ((window as any).L) {
-            clearInterval(interval);
-            initLeaflet();
-          }
-        }, 100);
-      }
-    }
-
-    return () => {
-      if (leafletMap.current) {
-        leafletMap.current.remove();
-        leafletMap.current = null;
-      }
-    };
-  }, [shipment]);
+  const pickupAddr = shipment.pickupDeliveryOption?.pickupAddress || 'Origin Address';
+  const deliveryAddr = shipment.pickupDeliveryOption?.deliveryAddress || 'Destination Address';
+  
+  // Calculate progress purely for visual symbolic representation
+  const progress = shipment.status === 'Delivered' ? 100 : shipment.status === 'InTransit' ? 55 : 5;
 
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-md h-64 w-full bg-slate-900">
-      <div ref={mapRef} className="w-full h-full z-0 filter contrast-[1.02]" />
+    <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-md h-56 w-full bg-slate-900 flex flex-col justify-center items-center px-4 md:px-12">
+      {/* Abstract Grid Background */}
+      <div className="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+      <div className="absolute inset-0 opacity-50 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,#1e3a8a4d_0%,#000000_100%)]"></div>
+      
+      {/* Route Line Container */}
+      <div className="relative w-full max-w-2xl h-16 flex items-center z-10 mt-6">
+        {/* Background Dashed Line */}
+        <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-[3px] border-t-2 border-dashed border-slate-700 w-[calc(100%-2rem)]"></div>
+        
+        {/* Active Progress Line */}
+        <div 
+          className="absolute left-4 top-1/2 -translate-y-1/2 h-[3px] bg-gradient-to-r from-amber-500 to-blue-500 transition-all duration-1000 ease-in-out" 
+          style={{ width: `calc(${progress}% - 2rem)` }}
+        ></div>
+
+        {/* Pickup Dot */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
+          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center border-4 border-slate-900 z-10 shadow-[0_0_15px_rgba(245,158,11,0.6)]">
+             <div className="w-2 h-2 rounded-full bg-white"></div>
+          </div>
+          <span className="absolute top-10 text-[10px] font-bold text-amber-400 whitespace-nowrap uppercase tracking-widest">{pickupAddr.slice(0, 15)}...</span>
+        </div>
+
+        {/* Truck Marker (moving along line) */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center z-20 transition-all duration-1000 ease-in-out"
+          style={{ left: `calc(${progress}%)`, transform: 'translate(-50%, -50%)' }}
+        >
+          <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center border-2 border-white shadow-[0_0_20px_rgba(37,99,235,0.9)]">
+            <Truck className="w-6 h-6 text-white" />
+          </div>
+          {shipment.status === 'InTransit' && (
+             <span className="absolute -top-8 text-[10px] font-bold text-blue-100 bg-blue-600/90 px-2.5 py-1 rounded-full whitespace-nowrap animate-pulse border border-blue-400 shadow-md">
+               🚚 Live Transit
+             </span>
+          )}
+        </div>
+
+        {/* Delivery Dot */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
+          <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center border-4 border-slate-900 z-10 shadow-[0_0_15px_rgba(16,185,129,0.6)]">
+            <div className="w-2 h-2 rounded-full bg-white"></div>
+          </div>
+          <span className="absolute top-10 text-[10px] font-bold text-emerald-400 whitespace-nowrap uppercase tracking-widest">{deliveryAddr.slice(0, 15)}...</span>
+        </div>
+      </div>
 
       {/* Telemetry Header */}
-      <div className="absolute top-3 left-3 right-3 z-[400] flex items-center justify-between pointer-events-none">
+      <div className="absolute top-3 left-3 z-20 pointer-events-none">
         <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-700/60 shadow-md">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className={`w-2 h-2 rounded-full ${shipment.status === 'InTransit' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
           <span className="text-[11px] font-extrabold text-slate-100 uppercase tracking-wider">
-            {shipment.status === 'InTransit' ? 'Leaflet GPS Live Map' : shipment.status === 'Delivered' ? 'Completed Route' : 'Pending Route'}
+            {shipment.status === 'InTransit' ? 'Route Telemetry Active' : shipment.status === 'Delivered' ? 'Route Completed' : 'Pending Route'}
           </span>
         </div>
       </div>
 
       {/* Telemetry Bottom Footer */}
-      <div className="absolute bottom-2 left-3 right-3 z-[400] flex items-center justify-between text-[11px] font-mono text-slate-300 bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-700 shadow-md pointer-events-none">
+      <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between text-[11px] font-mono text-slate-300 bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-700 shadow-md pointer-events-none">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-slate-200 font-bold">
             <Compass className="w-3.5 h-3.5 text-blue-400 animate-spin" style={{ animationDuration: '6s' }} /> GPS Sync
           </span>
           <span className="text-slate-600">|</span>
-          <span>SPEED: <strong className="text-white font-bold">58 km/h</strong></span>
+          <span>SPEED: <strong className="text-white font-bold">{shipment.status === 'InTransit' ? '58' : '0'} km/h</strong></span>
         </div>
-        <span className="text-emerald-400 font-bold">REALTIME LEAFLET ENGINE</span>
+        <span className="text-emerald-400 font-bold">SMARTFM TELEMETRY</span>
       </div>
     </div>
   );
