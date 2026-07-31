@@ -163,7 +163,13 @@ export function Payments() {
                         Issued {new Date(invoice.issuedAt).toLocaleDateString()}
                       </div>
                       <button
-                        onClick={() => setSelectedInvoice(invoice)}
+                        onClick={() => {
+                          setSelectedInvoice(invoice);
+                          reset({
+                            paymentMethod: 'CreditCard',
+                            referenceNumber: `TXN-${Math.floor(100000000 + Math.random() * 900000000)}`
+                          });
+                        }}
                         className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-all shadow-md hover:shadow-blue-600/30 flex items-center justify-center gap-2 group/btn"
                       >
                         Process Payment
