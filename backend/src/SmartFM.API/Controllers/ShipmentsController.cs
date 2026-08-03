@@ -158,6 +158,16 @@ public class ShipmentsController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteShipment(Guid id)
     {
+        var shipment = await _dbContext.Set<Shipment>().FirstOrDefaultAsync(s => s.Id == id);
+        if (shipment != null)
+        {
+            var order = await _dbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == shipment.OrderId);
+            if (order != null)
+            {
+                order.Status = OrderStatus.Cancelled;
+                await _dbContext.SaveChangesAsync();
+            }
+        }
         await _shipmentService.DeleteShipmentAsync(id);
         return NoContent();
     }
